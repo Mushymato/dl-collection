@@ -22,4 +22,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-public/*.png
+public/adv/
+public/d/
+public/w/
+public/wp/

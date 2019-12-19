@@ -55,12 +55,12 @@ export default function AdventurerList() {
                             prevEle = Adventurers[name].ele;
                             return (<Fragment key={nameKey}>< br /><div className="icon-check">
                                 <input type="checkbox" className={`icon-cb ${Adventurers[name].ele}`} id={nameKey} name={name} onClick={updateHaving} checked={having[name]} />
-                                <label htmlFor={nameKey}><img src={`/adv/${name}.png`} title={name} alt={name} /></label>
+                                <label htmlFor={nameKey}><img src={`adv/${name}.png`} title={name} alt={name} /></label>
                             </div></Fragment>);
                         } else {
                             return (<div className="icon-check" key={nameKey}>
                                 <input type="checkbox" className={`icon-cb ${Adventurers[name].ele}`} id={nameKey} name={name} onClick={updateHaving} checked={having[name]} />
-                                <label htmlFor={nameKey}><img src={`/adv/${name}.png`} title={name} alt={name} /></label>
+                                <label htmlFor={nameKey}><img src={`adv/${name}.png`} title={name} alt={name} /></label>
                             </div>);
                         }
                     }

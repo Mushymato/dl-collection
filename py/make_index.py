@@ -59,7 +59,7 @@ if __name__ == '__main__':
     data['Dragons'] = {k1: {'r'+str(k2): {} for k2 in range(5, 2, -1)} for k1 in elements}
     for d in get_data(
         tables='Dragons', 
-        fields='BaseId,VariationId,FullName,ElementalType,Availability', 
+        fields='BaseId,VariationId,FullName,ElementalType,Rarity,Availability', 
         where='IsPlayable'):
         el = d['title']['ElementalType']
         ra = 'r'+d['title']['Rarity']

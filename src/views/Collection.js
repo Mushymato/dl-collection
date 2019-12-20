@@ -6,20 +6,8 @@ import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
-import Adventurers from '../data/Adventurers.json';
 import IconCheckList from './IconCheckList';
 
-function initiateHaving(rarities) {
-    let initHaving = {};
-    Object.keys(Adventurers).forEach(ele => {
-        rarities.forEach(rare => {
-            Object.keys(Adventurers[ele][`r${rare}`]).forEach(adv => {
-                initHaving[adv] = false;
-            })
-        })
-    });
-    return initHaving;
-}
 const useStyles = makeStyles({
     elementGroup: {},
     headerLabel: {
@@ -32,6 +20,7 @@ const useStyles = makeStyles({
     }
 });
 const defaultRarity = [5, 4, 3];
+const defaultAvailability = 'All';
 function rarityToString(rarity) {
     if (rarity.length === 1) {
         return `${rarity}★`;
@@ -39,43 +28,55 @@ function rarityToString(rarity) {
         return 'All';
     }
 }
-export default function AdventurerList() {
+export default function CollectionList(props) {
     const [filters, setFilters] = useState({
         rarity: defaultRarity,
-        permanent: true,
-        welfare: true,
-        limited: true,
+        availability: defaultAvailability
     });
-    const [having, setHaving] = useState(initiateHaving(defaultRarity));
     const classes = useStyles();
+    const { collection, setCollection, collectionItems, prefix, itemType } = props;
 
     const updateHaving = e => {
-        setHaving({
-            ...having,
-            [e.target.name]: !having[e.target.name]
-        });
+        setCollection({ [e.target.name]: !collection[e.target.name] });
     }
 
     const checkHaving = name => {
-        return having[name];
+        return collection[name];
     }
 
     const toggleAll = (e) => {
         const newHaving = {};
-        Object.keys(having).forEach(k => {
+        Object.keys(collection).forEach(k => {
             newHaving[k] = e.target.checked;
         });
-        setHaving(newHaving);
+        setCollection(newHaving);
     }
 
-    const countHaving = () => {
-        return Object.keys(having).reduce((acc, cur) => {
-            if (having[cur] === true) {
-                return acc + 1;
-            } else {
-                return acc;
-            }
-        }, 0);
+    const countHaving = (rarity) => {
+        let acc = 0;
+        Object.keys(collectionItems).forEach(ele => {
+            rarity.forEach(rare => {
+                Object.keys(collectionItems[ele][`r${rare}`]).forEach(adv => {
+                    if (collection[adv] === true) {
+                        acc += 1;
+                    }
+                })
+            })
+        });
+        return acc;
+
+    }
+
+    const countItems = (rarity) => {
+        let acc = 0;
+        Object.keys(collectionItems).forEach(ele => {
+            rarity.forEach(rare => {
+                Object.keys(collectionItems[ele][`r${rare}`]).forEach(adv => {
+                    acc += 1;
+                })
+            })
+        });
+        return acc;
     }
 
     const toggleRarity = (e) => {
@@ -90,38 +91,38 @@ export default function AdventurerList() {
             ...filters,
             rarity: newRarity
         });
-        setHaving(initiateHaving(newRarity));
     }
 
-    const have = countHaving();
-    const total = Object.keys(having).length;
+
+    const have = countHaving(filters.rarity);
+    const total = countItems(filters.rarity);
 
     return (
         <div>
             <Grid container spacing={0} alignItems="flex-start">
-                <Grid item xs={12} sm={1}>
+                <Grid item xs={6} sm={1}>
                     <Button size="large" className={classes.headerButton} onClick={toggleRarity} color="default" fullWidth={true}>
                         {rarityToString(filters.rarity)}</Button>
                 </Grid>
-                <Grid item xs={12} sm={11}>
+                <Grid item xs={12} sm={10}>
                     <FormControlLabel
                         classes={{ label: classes.headerLabel }}
                         control={<Checkbox onChange={toggleAll} color="default" />}
-                        label={`Adventurers: ${have} / ${total} (${Math.floor((have / total) * 100)}%)`}
+                        label={`${itemType}: ${have} / ${total} (${Math.floor((have / total) * 100)}%)`}
                     />
                 </Grid>
             </Grid>
-            <div id="adventurerList">
-                {Object.keys(Adventurers).map(ele => {
+            <div className="collectionList">
+                {Object.keys(collectionItems).map(ele => {
                     return (
-                        <React.Fragment key={`advList-${ele}`}>
+                        <React.Fragment key={`${prefix}List-${ele}`}>
                             <Divider />
                             <div className={classes.elementGroup}>
                                 {filters.rarity.map(rare => {
                                     return (<IconCheckList
-                                        key={`advList-${ele}-r${rare}`}
-                                        iconList={Adventurers[ele][`r${rare}`]}
-                                        prefix='adv'
+                                        key={`${prefix}List-${ele}-r${rare}`}
+                                        iconList={collectionItems[ele][`r${rare}`]}
+                                        prefix={prefix}
                                         element={ele}
                                         updateState={updateHaving}
                                         checkState={checkHaving}

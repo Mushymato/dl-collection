@@ -31,7 +31,7 @@ pattern = {
 
 start = {
     "adventurer": "100001_01_r04.png",
-    "dragon": "210001_01.png",
+    "dragon": "200001_01.png",
     "weapon": "301001_01_19901.png",
     "wyrmprint": "400001_01.png",
     "material": "104001011.png",
@@ -93,7 +93,7 @@ def check_target_path(target):
 async def download(session, tbl, save_dir, k, v):
     try:
         fn = snakey(tbl[k]) + ".png"
-        path = Path(__file__).resolve().parent / "public/{}/{}".format(save_dir, fn)
+        path = Path(__file__).resolve().parent / "../public/{}/{}".format(save_dir, fn)
         async with session.get(v) as resp:
             assert resp.status == 200
             check_target_path(path)

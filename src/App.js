@@ -1,9 +1,31 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
 
 import CollectionList from './views/Collection';
+import { IconCheckList, IconCounterList } from './views/IconList';
 import Adventurers from './data/Adventurers.json';
 import Dragons from './data/Dragons.json';
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <Typography
+      component="div"
+      role="tabpanel"
+      hidden={value !== index}
+      id={`full-width-tabpanel-${index}`}
+      aria-labelledby={`full-width-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box p={0}>{children}</Box>}
+    </Typography>
+  );
+}
 
 function initiateCollection(collectionItems, initialValue) {
   let initHaving = {};
@@ -16,13 +38,21 @@ function initiateCollection(collectionItems, initialValue) {
   });
   return initHaving;
 }
-
+function a11yProps(index) {
+  return {
+    id: `full-width-tab-${index}`,
+    'aria-controls': `full-width-tabpanel-${index}`,
+  };
+}
 function App() {
-  const [collect, setCollect] = useState(
-    {
-      adv: initiateCollection(Adventurers, false),
-      d: initiateCollection(Dragons, false)
-    });
+  const [collect, setCollect] = useState({
+    adv: initiateCollection(Adventurers, 0),
+    d: initiateCollection(Dragons, 0)
+  });
+  const [idx, setIdx] = useState(0);
+  const handleChange = (e, newIdx) => {
+    setIdx(newIdx);
+  };
   const setAdvCollection = c => {
     setCollect({
       ...collect,
@@ -35,27 +65,45 @@ function App() {
       d: { ...collect.d, ...c }
     })
   }
-  return (<BrowserRouter basename="/">
-    <Switch>
-      <Route exact path="/adventurers">
+  const direction = 'ltr';
+  return (
+    <div>
+      <AppBar position="static" color="default">
+        <Tabs
+          value={idx}
+          onChange={handleChange}
+          indicatorColor="primary"
+          textColor="primary"
+          variant="fullWidth"
+        >
+          <Tab label="Adventurers" {...a11yProps(0)} />
+          <Tab label="Dragons" {...a11yProps(1)} />
+        </Tabs>
+      </AppBar>
+      <TabPanel value={idx} index={0} dir={direction}>
         <CollectionList
           collection={collect.adv}
           setCollection={setAdvCollection}
           collectionItems={Adventurers}
+          maxHaving={1}
+          defaultRarity={[5, 4, 3]}
+          IconListComponent={IconCheckList}
           itemType='Adventurers'
           prefix='adv' />
-      </Route>
-      <Route exact path="/dragons">
+      </TabPanel>
+      <TabPanel value={idx} index={1} dir={direction}>
         <CollectionList
           collection={collect.d}
           setCollection={setDraCollection}
           collectionItems={Dragons}
+          maxHaving={20}
+          defaultRarity={[5]}
+          IconListComponent={IconCounterList}
           itemType='Dragons'
           prefix='d' />
-      </Route>
-      <Redirect to="/adventurers" />
-    </Switch>
-  </BrowserRouter>);
+      </TabPanel>
+    </div>
+  );
 }
 
 export default App;

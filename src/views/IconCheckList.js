@@ -68,7 +68,7 @@ const useStyles = makeStyles({
                     '&:before': { backgroundColor: 'khaki' },
                     '& > img': { backgroundColor: 'khaki' },
                 },
-                '&.Dark': {
+                '&.Shadow': {
                     '&:before': { backgroundColor: 'mediumpurple' },
                     '& > img': { backgroundColor: 'mediumpurple' },
                 }

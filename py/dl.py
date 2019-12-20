@@ -204,6 +204,8 @@ if __name__ == "__main__":
         loop = asyncio.get_event_loop()
         loop.run_until_complete(download_images(sys.argv[1]))
     else:
-        for file_name in ("adventurer", "dragon", "weapon", "wyrmprint"):
+        # bolb = ("adventurer", "dragon", "weapon", "wyrmprint")
+        bolb = ("adventurer", "dragon")
+        for file_name in bolb:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(download_images(file_name))

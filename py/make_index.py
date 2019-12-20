@@ -13,6 +13,7 @@ alphafy_re = re.compile("[^a-zA-Z_]")
 
 elements = ['Flame', 'Water', 'Wind', 'Light', 'Shadow']
 weapon_types = ['Sword', 'Blade', 'Dagger', 'Axe', 'Lance', 'Bow', 'Wand', 'Staff']
+welfare_dragons = ['Story', 'High Dragon', 'Event Welfare', 'Void']
 
 def snakey(name):
     s = name.replace("ñ", "n")
@@ -56,16 +57,21 @@ if __name__ == '__main__':
         nm = snakey(d['title']['FullName'])
         data['Adventurers'][el][ra][nm] = av
     
-    data['Dragons'] = {k1: {'r'+str(k2): {} for k2 in range(5, 2, -1)} for k1 in elements}
+    data['Dragons'] = {k1: {k2: {} for k2 in ['r5', 'misc']} for k1 in elements}
     for d in get_data(
         tables='Dragons', 
         fields='BaseId,VariationId,FullName,ElementalType,Rarity,Availability', 
-        where='IsPlayable'):
+        where='IsPlayable',
+        order_by='Rarity DESC'):
         el = d['title']['ElementalType']
         ra = 'r'+d['title']['Rarity']
         av = d['title']['Availability']
         nm = snakey(d['title']['FullName'])
-        data['Dragons'][el][ra][nm] = av
+        if av in welfare_dragons or ra in ['r3', 'r4']:
+            data['Dragons'][el]['misc'][nm] = av
+        else:
+            data['Dragons'][el][ra][nm] = av
+
     
     # data['Weapons'] = {snakey(d['title']['WeaponName']) : {
     #     'ele': d['title']['ElementalType'],

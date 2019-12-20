@@ -53,18 +53,57 @@ function App() {
   const handleChange = (e, newIdx) => {
     setIdx(newIdx);
   };
+
   const setAdvCollection = c => {
     setCollect({
       ...collect,
       adv: { ...collect.adv, ...c }
     })
   }
+  const nextAdvRarity = r => {
+    if (r.length === 3) {
+      return ['r5'];
+    } else if (r[0] === 'r5') {
+      return ['r4'];
+    } else if (r[0] === 'r4') {
+      return ['r3'];
+    } else {
+      return ['r5', 'r4', 'r3'];
+    }
+  }
+  const advRarityToString = r => {
+    if (r.length === 3) {
+      return 'All';
+    } else {
+      return `${r[0][1]}★`;
+    }
+  }
+
   const setDraCollection = c => {
     setCollect({
       ...collect,
       d: { ...collect.d, ...c }
     })
   }
+  const nextDraRarity = r => {
+    if (r.length === 2) {
+      return ['r5'];
+    } else if (r[0] === 'r5') {
+      return ['misc'];
+    } else {
+      return ['r5', 'misc'];
+    }
+  }
+  const draRarityToString = r => {
+    if (r.length === 2) {
+      return 'All';
+    } else if (r[0] === 'misc') {
+      return `Others`;
+    } else {
+      return `Gacha 5★`;
+    }
+  }
+
   const direction = 'ltr';
   return (
     <div>
@@ -86,7 +125,9 @@ function App() {
           setCollection={setAdvCollection}
           collectionItems={Adventurers}
           maxHaving={1}
-          defaultRarity={[5, 4, 3]}
+          defaultRarity={['r5', 'r4', 'r3']}
+          nextRarity={nextAdvRarity}
+          rarityToString={advRarityToString}
           IconListComponent={IconCheckList}
           itemType='Adventurers'
           prefix='adv' />
@@ -97,7 +138,9 @@ function App() {
           setCollection={setDraCollection}
           collectionItems={Dragons}
           maxHaving={20}
-          defaultRarity={[5]}
+          defaultRarity={['r5']}
+          nextRarity={nextDraRarity}
+          rarityToString={draRarityToString}
           IconListComponent={IconCounterList}
           itemType='Dragons'
           prefix='d' />

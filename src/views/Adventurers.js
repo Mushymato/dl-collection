@@ -1,22 +1,39 @@
-import React, { useState, Fragment } from 'react';
-import Adventurers from '../data/Adventurers.json';
+import React, { useState } from 'react';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import './Adventurers.css';
+import Divider from '@material-ui/core/Divider';
+import { makeStyles } from '@material-ui/core/styles';
+
+import Adventurers from '../data/Adventurers.json';
+import IconCheckList from './IconCheckList';
 
 let initHaving = {};
-Object.keys(Adventurers).forEach(k => {
-    initHaving[k] = false;
+Object.keys(Adventurers).forEach(ele => {
+    Object.keys(Adventurers[ele]).forEach(rare => {
+        Object.keys(Adventurers[ele][rare]).forEach(adv => {
+            initHaving[adv] = false;
+        })
+    })
 });
-
+const useStyles = makeStyles({
+    elementGroup: {},
+    headerLabel: {
+        fontSize: '2em'
+    }
+});
 export default function AdventurerList() {
     const [having, setHaving] = useState(initHaving);
+    const classes = useStyles();
 
     const updateHaving = e => {
         setHaving({
             ...having,
             [e.target.name]: !having[e.target.name]
         });
+    }
+
+    const checkHaving = name => {
+        return having[name];
     }
 
     const toggleAll = (e) => {
@@ -38,33 +55,33 @@ export default function AdventurerList() {
     }
 
     const have = countHaving();
-    const total = Object.keys(Adventurers).length;
+    const total = Object.keys(having).length;
 
-    let prevEle = 'Flame';
     return (
         <div>
-            <FormControlLabel
+            <FormControlLabel classes={{ label: classes.headerLabel }}
                 control={<Checkbox onChange={toggleAll} color="default" />}
                 label={`Adventurers: ${have} / ${total} (${Math.floor((have / total) * 100)}%)`}
             />
             <div id="adventurerList">
-                {Object.keys(Adventurers).map(
-                    name => {
-                        const nameKey = `adv-${name}`
-                        if (Adventurers[name].ele !== prevEle) {
-                            prevEle = Adventurers[name].ele;
-                            return (<Fragment key={nameKey}>< br /><div className="icon-check">
-                                <input type="checkbox" className={`icon-cb ${Adventurers[name].ele}`} id={nameKey} name={name} onClick={updateHaving} checked={having[name]} />
-                                <label htmlFor={nameKey}><img src={`adv/${name}.png`} title={name} alt={name} /></label>
-                            </div></Fragment>);
-                        } else {
-                            return (<div className="icon-check" key={nameKey}>
-                                <input type="checkbox" className={`icon-cb ${Adventurers[name].ele}`} id={nameKey} name={name} onClick={updateHaving} checked={having[name]} />
-                                <label htmlFor={nameKey}><img src={`adv/${name}.png`} title={name} alt={name} /></label>
-                            </div>);
-                        }
-                    }
-                )}
+                {Object.keys(Adventurers).map(ele => {
+                    return (
+                        <React.Fragment key={`advList-${ele}`}>
+                            <Divider />
+                            <div className={classes.elementGroup}>
+                                {Object.keys(Adventurers[ele]).map(rare => {
+                                    return (<IconCheckList
+                                        iconList={Adventurers[ele][rare]}
+                                        prefix='adv'
+                                        element={ele}
+                                        updateState={updateHaving}
+                                        checkState={checkHaving}
+                                    />);
+                                })}
+                            </div>
+                        </React.Fragment>
+                    );
+                })}
             </div>
         </div>
     )

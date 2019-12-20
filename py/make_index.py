@@ -11,6 +11,9 @@ BASE_URL = 'https://dragalialost.gamepedia.com/api.php?action=cargoquery&format=
 
 alphafy_re = re.compile("[^a-zA-Z_]")
 
+elements = ['Flame', 'Water', 'Wind', 'Light', 'Shadow']
+weapon_types = ['Sword', 'Blade', 'Dagger', 'Axe', 'Lance', 'Bow', 'Wand', 'Staff']
+
 def snakey(name):
     s = name.replace("ñ", "n")
     s = s.replace("&amp;", "and")
@@ -41,19 +44,38 @@ def get_data(**kwargs):
 if __name__ == '__main__':
     data = {}
 
-    data['Adventurers'] = {snakey(d['title']['FullName']) : {
+    data['Adventurers'] = {k1: {'r'+str(k2): {} for k2 in range(5, 2, -1)} for k1 in elements}
+    for d in get_data(
+        tables='Adventurers', 
+        fields='FullName,ElementalType,WeaponType,Rarity,Availability', 
+        where='IsPlayable',
+        order_by='WeaponTypeId ASC'):
+        el = d['title']['ElementalType']
+        ra = 'r'+d['title']['Rarity']
+        av = d['title']['Availability']
+        nm = snakey(d['title']['FullName'])
+        data['Adventurers'][el][ra][nm] = av
+    
+    data['Dragons'] = {snakey(d['title']['FullName']) : {
         'ele': d['title']['ElementalType'],
-        'wt': d['title']['WeaponType'],
-        'ct': d['title']['CharaType'],
         'ob': d['title']['Availability'],
         'rl': d['title']['ReleaseDate']
     } for d in get_data(
-        tables='Adventurers', 
-        fields='FullName,ElementalType,WeaponType,CharaType,Availability,ReleaseDate', 
+        tables='Dragons', 
+        fields='BaseId,VariationId,FullName,ElementalType,Availability,ReleaseDate',
         where='IsPlayable',
-        order_by='ElementalTypeId ASC, WeaponTypeId ASC')}
-    data['Dragons'] = {'d{}_{:02d}'.format(d['title']['BaseId'], int(d['title']['VariationId'])) : snakey(d['title']['FullName']) for d in get_data(tables='Dragons', fields='BaseId,VariationId,FullName', where="IsPlayable")}
-    data['Weapons'] = {'w{}_{:02d}'.format(d['title']['BaseId'], int(d['title']['VariationId'])) : snakey(d['title']['WeaponName']) for d in get_data(tables='Weapons', fields='BaseId,VariationId,WeaponName,Type', where="IsPlayable")}
+        order_by='ElementalTypeId ASC, Rarity DESC')}
+    
+    data['Weapons'] = {snakey(d['title']['WeaponName']) : {
+        'ele': d['title']['ElementalType'],
+        'ob': d['title']['Availability'],
+        'rl': d['title']['ReleaseDate']
+    } for d in get_data(
+        tables='Weapons', 
+        fields='BaseId,VariationId,WeaponName,Type,ElementalType,Availability,ReleaseDate', 
+        where='IsPlayable',
+        order_by='TypeId ASC')}
+    
     data['Wyrmprints'] = {'a{}_{:02d}'.format(d['title']['BaseId'], int(d['title']['VariationId'])) : snakey(d['title']['Name']) for d in get_data(tables='Wyrmprints', fields='BaseId,VariationId,Name,AmuletType', where="IsPlayable")}
 
     for k in data:

@@ -4,9 +4,11 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.8.0",
+    "@material-ui/styles": "^4.7.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
+    "clsx": "^1.0.4",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-scripts": "3.3.0"
@@ -16,7 +18,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "python make_index.py && python dl.py && npm run build",
+    "predeploy": "python py/make_index.py && python py/dl.py && npm run build",
     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {

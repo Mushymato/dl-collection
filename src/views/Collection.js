@@ -21,7 +21,46 @@ export default function CollectionList(props) {
     const [filters, setFilters] = useState({
         rarity: defaultRarity
     });
-    const [checked, setChecked] = useState(false);
+
+    const countMubHaving = (rarity) => {
+        let acc = 0;
+        Object.keys(collectionItems).forEach(ele => {
+            rarity.forEach(rare => {
+                Object.keys(collectionItems[ele][rare]).forEach(item => {
+                    acc += Math.floor(collection[item] / 5);
+                })
+            })
+        });
+        return acc;
+    }
+
+    const countItems = (rarity) => {
+        let acc = 0;
+        Object.keys(collectionItems).forEach(ele => {
+            rarity.forEach(rare => {
+                Object.keys(collectionItems[ele][rare]).forEach(item => {
+                    acc += 1;
+                })
+            })
+        });
+        return acc;
+    }
+
+    const countHaving = (rarity) => {
+        let acc = 0;
+        Object.keys(collectionItems).forEach(ele => {
+            rarity.forEach(rare => {
+                Object.keys(collectionItems[ele][rare]).forEach(item => {
+                    if (collection[item] > 0) {
+                        acc += 1;
+                    }
+                })
+            })
+        });
+        return acc;
+    }
+
+    const [checked, setChecked] = useState(countHaving(defaultRarity) > countItems(defaultRarity) / 2);
     const classes = useStyles();
 
     const updateHaving = e => {
@@ -56,44 +95,6 @@ export default function CollectionList(props) {
         });
         setCollection(newHaving);
         setChecked(!checked);
-    }
-
-    const countHaving = (rarity) => {
-        let acc = 0;
-        Object.keys(collectionItems).forEach(ele => {
-            rarity.forEach(rare => {
-                Object.keys(collectionItems[ele][rare]).forEach(item => {
-                    if (collection[item] > 0) {
-                        acc += 1;
-                    }
-                })
-            })
-        });
-        return acc;
-    }
-
-    const countMubHaving = (rarity) => {
-        let acc = 0;
-        Object.keys(collectionItems).forEach(ele => {
-            rarity.forEach(rare => {
-                Object.keys(collectionItems[ele][rare]).forEach(item => {
-                    acc += Math.floor(collection[item] / 5);
-                })
-            })
-        });
-        return acc;
-    }
-
-    const countItems = (rarity) => {
-        let acc = 0;
-        Object.keys(collectionItems).forEach(ele => {
-            rarity.forEach(rare => {
-                Object.keys(collectionItems[ele][rare]).forEach(item => {
-                    acc += 1;
-                })
-            })
-        });
-        return acc;
     }
 
     const toggleRarity = (e) => {

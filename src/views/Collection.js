@@ -32,6 +32,14 @@ export default function CollectionList(props) {
         }
     }
 
+    const decreaseHaving = e => {
+        const name = e.currentTarget.dataset.name;
+        e.preventDefault();
+        if (collection[name] > 0) {
+            setCollection({ [name]: collection[name] - 1 });
+        }
+    }
+
     const checkHaving = name => {
         return collection[name];
     }
@@ -134,6 +142,7 @@ export default function CollectionList(props) {
                                         element={ele}
                                         updateState={updateHaving}
                                         checkState={checkHaving}
+                                        decreaseState={decreaseHaving}
                                     />);
                                 })}
                             </div>

@@ -137,7 +137,7 @@ function App() {
           collection={collect.d}
           setCollection={setDraCollection}
           collectionItems={Dragons}
-          maxHaving={20}
+          maxHaving={99}
           defaultRarity={['r5']}
           nextRarity={nextDraRarity}
           rarityToString={draRarityToString}

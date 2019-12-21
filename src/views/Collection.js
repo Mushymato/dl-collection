@@ -115,7 +115,7 @@ export default function CollectionList(props) {
         statsLabel += ' [' + String.fromCharCode(10070) + `${haveMub}]`
     }
     return (
-        <div>
+        <React.Fragment>
             <Grid container spacing={0} alignItems="flex-start">
                 <Grid item xs={12} sm={1}>
                     <Button size="large" className={classes.headerButton} onClick={toggleRarity} color="default" fullWidth={true}>
@@ -151,6 +151,6 @@ export default function CollectionList(props) {
                     );
                 })}
             </div>
-        </div>
+        </React.Fragment>
     )
 }

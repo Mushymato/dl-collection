@@ -38,7 +38,8 @@ const useStyles = makeStyles({
                 lineHeight: props => props.beforeShape === 'circle' ? `${props.beforeSize}em` : '1.25em',
                 textAlign: 'center',
                 transitionDuration: '0.4s',
-                transform: 'scale(0)'
+                transform: 'scale(0)',
+                fontStretch: 'ultra-condensed'
             }
         },
         '&:checked': {

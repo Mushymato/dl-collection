@@ -106,7 +106,7 @@ function App() {
 
   const direction = 'ltr';
   return (
-    <div>
+    <React.Fragment>
       <AppBar position="static" color="default">
         <Tabs
           value={idx}
@@ -145,7 +145,7 @@ function App() {
           itemType='Dragons'
           prefix='d' />
       </TabPanel>
-    </div>
+    </React.Fragment>
   );
 }
 

@@ -10,6 +10,7 @@ import { IconCheckList, IconCounterList } from './views/IconList';
 import Adventurers from './data/Adventurers.json';
 import Dragons from './data/Dragons.json';
 import Weapons from './data/Weapons.json';
+import Wyrmprints from './data/Wyrmprints.json';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -32,7 +33,7 @@ function initiateCollection(collectionItems, initialValue) {
   let initHaving = {};
   Object.keys(collectionItems).forEach(ele => {
     Object.keys(collectionItems[ele]).forEach(rare => {
-      Object.keys(collectionItems[ele][rare]).forEach(adv => {
+      collectionItems[ele][rare].forEach(adv => {
         initHaving[adv] = initialValue;
       })
     })
@@ -49,7 +50,8 @@ function App() {
   const [collect, setCollect] = useState({
     adv: initiateCollection(Adventurers, 0),
     d: initiateCollection(Dragons, 0),
-    w: initiateCollection(Weapons, 0)
+    w: initiateCollection(Weapons, 0),
+    wp: initiateCollection(Wyrmprints, 0),
   });
   const [idx, setIdx] = useState(0);
   const handleChange = (e, newIdx) => {
@@ -118,14 +120,6 @@ function App() {
     } else {
       return ['HDT2', 'HDT1', 'Core', 'Void'];
     }
-    // const mapping = {
-    //   HDT2: ['HDT1'],
-    //   HDT1: ['Core'],
-    //   Core: ['Void'],
-    //   Void: ['Limited'],
-    //   Limited: ['HDT2', 'HDT1', 'Core', 'Void']
-    // }
-    // return mapping[r[0]]
   }
   const wepRarityToString = r => {
     if (r.length === 4) {
@@ -133,6 +127,23 @@ function App() {
     } else {
       return r[0];
     }
+  }
+
+  const setWPCollection = c => {
+    setCollect({
+      ...collect,
+      wp: { ...collect.wp, ...c }
+    })
+  }
+  const nextWPRarity = r => {
+    if (r[0] === 'Limited') {
+      return ['Permanent'];
+    } else {
+      return ['Limited'];
+    }
+  }
+  const wpRarityToString = r => {
+    return r[0];
   }
 
   const direction = 'ltr';
@@ -149,6 +160,7 @@ function App() {
           <Tab label="Adventurers" {...a11yProps(0)} />
           <Tab label="Dragons" {...a11yProps(1)} />
           <Tab label="Weapons" {...a11yProps(2)} />
+          <Tab label="Wyrmprints" {...a11yProps(3)} />
         </Tabs>
       </AppBar>
       <TabPanel value={idx} index={0} dir={direction}>
@@ -189,6 +201,19 @@ function App() {
           IconListComponent={IconCounterList}
           itemType='Weapons'
           prefix='w' />
+      </TabPanel>
+      <TabPanel value={idx} index={3} dir={direction}>
+        <CollectionList
+          collection={collect.wp}
+          setCollection={setWPCollection}
+          collectionItems={Wyrmprints}
+          maxHaving={20}
+          defaultRarity={['Limited']}
+          nextRarity={nextWPRarity}
+          rarityToString={wpRarityToString}
+          IconListComponent={IconCounterList}
+          itemType='Wyrmprint'
+          prefix='wp' />
       </TabPanel>
     </React.Fragment>
   );

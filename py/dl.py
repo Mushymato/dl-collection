@@ -124,6 +124,8 @@ def image_list(file_name):
             "{}_02.png".format(d["title"]["BaseId"]): d["title"]["Name"]
             for d in get_data(tables="Wyrmprints", fields="BaseId,Name")
         }
+        # in_an_unending_world.png
+        tbl['400411_01.png'] = 'In an Unending World'
     elif file_name == "weapon":
         tbl = {
             "{}_01_{}.png".format(d["title"]["BaseId"], d["title"]["FormId"]): d["title"][
@@ -204,8 +206,8 @@ if __name__ == "__main__":
         loop = asyncio.get_event_loop()
         loop.run_until_complete(download_images(sys.argv[1]))
     else:
-        # bolb = ("adventurer", "dragon", "weapon", "wyrmprint")
-        bolb = ("adventurer", "dragon")
+        bolb = ("adventurer", "dragon", "weapon", "wyrmprint")
+        # bolb = ("adventurer", "dragon")
         for file_name in bolb:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(download_images(file_name))

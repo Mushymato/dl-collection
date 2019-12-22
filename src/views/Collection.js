@@ -44,7 +44,7 @@ export default function CollectionList(props) {
         let acc = 0;
         Object.keys(collectionItems).forEach(ele => {
             rarity.forEach(rare => {
-                Object.keys(collectionItems[ele][rare]).forEach(item => {
+                collectionItems[ele][rare].forEach(item => {
                     acc += Math.floor(collection[item] / 5);
                 })
             })
@@ -56,7 +56,7 @@ export default function CollectionList(props) {
         let acc = 0;
         Object.keys(collectionItems).forEach(ele => {
             rarity.forEach(rare => {
-                Object.keys(collectionItems[ele][rare]).forEach(item => {
+                collectionItems[ele][rare].forEach(item => {
                     acc += 1;
                 })
             })
@@ -68,7 +68,7 @@ export default function CollectionList(props) {
         let acc = 0;
         Object.keys(collectionItems).forEach(ele => {
             rarity.forEach(rare => {
-                Object.keys(collectionItems[ele][rare]).forEach(item => {
+                collectionItems[ele][rare].forEach(item => {
                     if (collection[item] > 0) {
                         acc += 1;
                     }
@@ -106,7 +106,7 @@ export default function CollectionList(props) {
         const newValue = !checked ? Math.min(maxHaving, 5) : 0;
         Object.keys(collectionItems).forEach(ele => {
             filters.rarity.forEach(rare => {
-                Object.keys(collectionItems[ele][rare]).forEach(item => {
+                collectionItems[ele][rare].forEach(item => {
                     newHaving[item] = newValue;
                 });
             });
@@ -155,7 +155,7 @@ export default function CollectionList(props) {
                             <Divider />
                             <div className={classes.elementGroup}>
                                 {filters.rarity.map(rare => {
-                                    if (Object.keys(collectionItems[ele][rare]).length > 0) {
+                                    if (collectionItems[ele][rare].length > 0) {
                                         return (
                                             <div className={displayRarityClass} data-before={rarityToString([rare])} key={`${prefix}List-${ele}-${rare}`}>
                                                 <IconListComponent
@@ -167,6 +167,8 @@ export default function CollectionList(props) {
                                                     decreaseState={decreaseHaving}
                                                 />
                                             </div>);
+                                    } else {
+                                        return <React.Fragment></React.Fragment>;
                                     }
                                 })}
                             </div>

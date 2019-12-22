@@ -5,9 +5,27 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
 
 const useStyles = makeStyles({
     elementGroup: {},
+    iconListGroup: {
+        '&:before': {
+            content: 'attr(data-before)',
+            display: 'inline-block',
+            position: 'relative',
+            top: '-2em',
+            width: 'auto',
+            lineHeight: '2em',
+            textAlign: 'center'
+        },
+        '&.Weapons:before': {
+            minWidth: '3em',
+        },
+        '&.Dragons:before': {
+            minWidth: '5em',
+        }
+    },
     headerLabel: {
         fontSize: '1.5em'
     },
@@ -109,6 +127,7 @@ export default function CollectionList(props) {
     const have = countHaving(filters.rarity);
     const total = countItems(filters.rarity);
     const haveMub = countMubHaving(filters.rarity);
+    const displayRarityClass = filters.rarity.length > 1 ? clsx(classes.iconListGroup, itemType) : '';
 
     let statsLabel = `${itemType}: ${have} / ${total} (${Math.floor((have / total) * 100)}%)`;
     if (haveMub > 0) {
@@ -136,15 +155,19 @@ export default function CollectionList(props) {
                             <Divider />
                             <div className={classes.elementGroup}>
                                 {filters.rarity.map(rare => {
-                                    return (<IconListComponent
-                                        key={`${prefix}List-${ele}-${rare}`}
-                                        iconList={collectionItems[ele][rare]}
-                                        prefix={prefix}
-                                        element={ele}
-                                        updateState={updateHaving}
-                                        checkState={checkHaving}
-                                        decreaseState={decreaseHaving}
-                                    />);
+                                    if (Object.keys(collectionItems[ele][rare]).length > 0) {
+                                        return (
+                                            <div className={displayRarityClass} data-before={rarityToString([rare])} key={`${prefix}List-${ele}-${rare}`}>
+                                                <IconListComponent
+                                                    iconList={collectionItems[ele][rare]}
+                                                    prefix={prefix}
+                                                    element={ele}
+                                                    updateState={updateHaving}
+                                                    checkState={checkHaving}
+                                                    decreaseState={decreaseHaving}
+                                                />
+                                            </div>);
+                                    }
                                 })}
                             </div>
                         </React.Fragment>

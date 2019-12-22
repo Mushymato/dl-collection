@@ -9,6 +9,7 @@ import CollectionList from './views/Collection';
 import { IconCheckList, IconCounterList } from './views/IconList';
 import Adventurers from './data/Adventurers.json';
 import Dragons from './data/Dragons.json';
+import Weapons from './data/Weapons.json';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -47,7 +48,8 @@ function a11yProps(index) {
 function App() {
   const [collect, setCollect] = useState({
     adv: initiateCollection(Adventurers, 0),
-    d: initiateCollection(Dragons, 0)
+    d: initiateCollection(Dragons, 0),
+    w: initiateCollection(Weapons, 0)
   });
   const [idx, setIdx] = useState(0);
   const handleChange = (e, newIdx) => {
@@ -104,6 +106,35 @@ function App() {
     }
   }
 
+  const setWepCollection = c => {
+    setCollect({
+      ...collect,
+      w: { ...collect.w, ...c }
+    })
+  }
+  const nextWepRarity = r => {
+    if (r.length > 1) {
+      return ['Limited'];
+    } else {
+      return ['HDT2', 'HDT1', 'Core', 'Void'];
+    }
+    // const mapping = {
+    //   HDT2: ['HDT1'],
+    //   HDT1: ['Core'],
+    //   Core: ['Void'],
+    //   Void: ['Limited'],
+    //   Limited: ['HDT2', 'HDT1', 'Core', 'Void']
+    // }
+    // return mapping[r[0]]
+  }
+  const wepRarityToString = r => {
+    if (r.length === 4) {
+      return 'All';
+    } else {
+      return r[0];
+    }
+  }
+
   const direction = 'ltr';
   return (
     <React.Fragment>
@@ -117,6 +148,7 @@ function App() {
         >
           <Tab label="Adventurers" {...a11yProps(0)} />
           <Tab label="Dragons" {...a11yProps(1)} />
+          <Tab label="Weapons" {...a11yProps(2)} />
         </Tabs>
       </AppBar>
       <TabPanel value={idx} index={0} dir={direction}>
@@ -144,6 +176,19 @@ function App() {
           IconListComponent={IconCounterList}
           itemType='Dragons'
           prefix='d' />
+      </TabPanel>
+      <TabPanel value={idx} index={2} dir={direction}>
+        <CollectionList
+          collection={collect.w}
+          setCollection={setWepCollection}
+          collectionItems={Weapons}
+          maxHaving={5}
+          defaultRarity={['HDT2', 'HDT1', 'Core', 'Void']}
+          nextRarity={nextWepRarity}
+          rarityToString={wepRarityToString}
+          IconListComponent={IconCounterList}
+          itemType='Weapons'
+          prefix='w' />
       </TabPanel>
     </React.Fragment>
   );

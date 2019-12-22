@@ -72,16 +72,33 @@ if __name__ == '__main__':
         else:
             data['Dragons'][el][ra][nm] = av
 
-    
-    # data['Weapons'] = {snakey(d['title']['WeaponName']) : {
-    #     'ele': d['title']['ElementalType'],
-    #     'ob': d['title']['Availability'],
-    #     'rl': d['title']['ReleaseDate']
-    # } for d in get_data(
-    #     tables='Weapons', 
-    #     fields='BaseId,VariationId,WeaponName,Type,ElementalType,Availability,ReleaseDate', 
-    #     where='IsPlayable',
-    #     order_by='TypeId ASC')}
+    void_hdt_prereqs = {
+        'Flame': 'Zephyr Rune',
+        'Water': 'Blazing Ember',
+        'Wind': 'Oceanic Crown',
+        'Light': 'Ruinous Wing',
+        'Shadow': 'Abyssal Standard',
+    }
+    data['Weapons'] = {k1: {k2: {} for k2 in ['Core', 'Void', 'HDT1', 'HDT2', 'Limited']} for k1 in elements + ['None']}
+    for d in get_data(
+        tables='Weapons', 
+        fields='BaseId,CraftNodeId,WeaponName,Type,Rarity,ElementalType,Availability', 
+        where='IsPlayable AND ((Rarity=5 AND ElementalType!=\'None\') OR Availability=\'Limited\') AND (Availability!=\'Void\' OR ('+' OR '.join(['(ElementalType=\'{}\' AND CraftMaterial3=\'{}\')'.format(k, v) for k, v in void_hdt_prereqs.items()])+'))',
+        order_by='TypeId ASC, CraftNodeId DESC'):
+        el = d['title']['ElementalType']
+        wt = d['title']['Type']
+        av = d['title']['Availability']
+        nm = snakey(d['title']['WeaponName'])
+        if av == 'High Dragon':
+            cn = d['title']['CraftNodeId']
+            data['Weapons'][el]['HDT'+cn[0]][nm] = wt
+        else:
+            data['Weapons'][el][av][nm] = wt
+    # for ele in data['Weapons']:
+    #     for cat in data['Weapons'][ele].copy().keys():
+            # print(cat)
+            # if len(data['Weapons'][ele][cat].items()) == 0:
+            #     del data['Weapons'][ele][cat]
     
     # data['Wyrmprints'] = {'a{}_{:02d}'.format(d['title']['BaseId'], int(d['title']['VariationId'])) : snakey(d['title']['Name']) for d in get_data(tables='Wyrmprints', fields='BaseId,VariationId,Name,AmuletType', where="IsPlayable")}
 

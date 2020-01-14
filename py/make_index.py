@@ -66,8 +66,10 @@ def get_data(**kwargs):
         print(url)
         r = requests.get(url).json()
         try:
+            if len(r['cargoquery']) == 0:
+                break
             data += r['cargoquery']
-            offset += len(data)
+            offset += len(r['cargoquery'])
         except:
             raise Exception(url)
     return data

@@ -29,14 +29,27 @@ function TabPanel(props) {
   );
 }
 
-function initiateCollection(collectionItems, initialValue) {
-  let initHaving = {};
-  Object.keys(collectionItems).forEach(ele => {
-    Object.keys(collectionItems[ele]).forEach(rare => {
-      collectionItems[ele][rare].forEach(adv => {
-        initHaving[adv] = initialValue;
-      })
-    })
+function initiateCollection(collectionItems) {
+  const savedCollection = localStorage.getItem('dl-collection');
+  let initHaving = {
+    adv: {},
+    d: {},
+    w: {},
+    wp: {}
+  };
+  if (savedCollection) {
+    initHaving = JSON.parse(savedCollection);
+  }
+  Object.keys(collectionItems).forEach(type => {
+    Object.keys(collectionItems[type]).forEach(ele => {
+      Object.keys(collectionItems[type][ele]).forEach(rare => {
+        collectionItems[type][ele][rare].forEach(thingy => {
+          if (!initHaving[type].hasOwnProperty(thingy)) {
+            initHaving[type][thingy] = 0;
+          }
+        });
+      });
+    });
   });
   return initHaving;
 }
@@ -47,16 +60,12 @@ function a11yProps(index) {
   };
 }
 function App() {
-  let currentCollect = JSON.parse(localStorage.getItem('dl-collection'));
-  if (!currentCollect) {
-    currentCollect = {
-      adv: initiateCollection(Adventurers, 0),
-      d: initiateCollection(Dragons, 0),
-      w: initiateCollection(Weapons, 0),
-      wp: initiateCollection(Wyrmprints, 0),
-    };
-  }
-  const [collect, setCollect] = useState(currentCollect);
+  const [collect, setCollect] = useState(initiateCollection({
+    adv: Adventurers,
+    d: Dragons,
+    w: Weapons,
+    wp: Wyrmprints,
+  }));
   const [idx, setIdx] = useState(0);
   const handleChange = (e, newIdx) => {
     setIdx(newIdx);

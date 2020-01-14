@@ -168,7 +168,7 @@ export default function CollectionList(props) {
                                                 />
                                             </div>);
                                     } else {
-                                        return <React.Fragment></React.Fragment>;
+                                        return <React.Fragment key={`${prefix}List-${ele}-${rare}`}></React.Fragment>;
                                     }
                                 })}
                             </div>

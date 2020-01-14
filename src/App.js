@@ -47,23 +47,31 @@ function a11yProps(index) {
   };
 }
 function App() {
-  const [collect, setCollect] = useState({
-    adv: initiateCollection(Adventurers, 0),
-    d: initiateCollection(Dragons, 0),
-    w: initiateCollection(Weapons, 0),
-    wp: initiateCollection(Wyrmprints, 0),
-  });
+  let currentCollect = JSON.parse(localStorage.getItem('dl-collection'));
+  if (!currentCollect) {
+    currentCollect = {
+      adv: initiateCollection(Adventurers, 0),
+      d: initiateCollection(Dragons, 0),
+      w: initiateCollection(Weapons, 0),
+      wp: initiateCollection(Wyrmprints, 0),
+    };
+  }
+  const [collect, setCollect] = useState(currentCollect);
   const [idx, setIdx] = useState(0);
   const handleChange = (e, newIdx) => {
     setIdx(newIdx);
   };
 
-  const setAdvCollection = c => {
-    setCollect({
+  const updateCollection = (c, key) => {
+    const newCollect = {
       ...collect,
-      adv: { ...collect.adv, ...c }
-    })
-  }
+      [key]: { ...collect[key], ...c }
+    };
+    setCollect(newCollect);
+    localStorage.setItem('dl-collection', JSON.stringify(newCollect));
+  };
+
+  const setAdvCollection = c => { updateCollection(c, 'adv') };
   const nextAdvRarity = r => {
     if (r.length === 3) {
       return ['r5'];
@@ -83,12 +91,7 @@ function App() {
     }
   }
 
-  const setDraCollection = c => {
-    setCollect({
-      ...collect,
-      d: { ...collect.d, ...c }
-    })
-  }
+  const setDraCollection = c => { updateCollection(c, 'd') };
   const nextDraRarity = r => {
     if (r.length === 2) {
       return ['r5'];
@@ -108,33 +111,23 @@ function App() {
     }
   }
 
-  const setWepCollection = c => {
-    setCollect({
-      ...collect,
-      w: { ...collect.w, ...c }
-    })
-  }
+  const setWepCollection = c => { updateCollection(c, 'w') };
   const nextWepRarity = r => {
     if (r.length > 1) {
       return ['Limited'];
     } else {
-      return ['HDT2', 'HDT1', 'Core', 'Void'];
+      return ['Agito', 'HDT2'];
     }
   }
   const wepRarityToString = r => {
-    if (r.length === 4) {
-      return 'All';
+    if (r.length === 2) {
+      return 'Agito/HDT';
     } else {
       return r[0];
     }
   }
 
-  const setWPCollection = c => {
-    setCollect({
-      ...collect,
-      wp: { ...collect.wp, ...c }
-    })
-  }
+  const setWPCollection = c => { updateCollection(c, 'wp') };
   const nextWPRarity = r => {
     if (r[0] === 'Limited') {
       return ['Permanent'];
@@ -195,7 +188,7 @@ function App() {
           setCollection={setWepCollection}
           collectionItems={Weapons}
           maxHaving={5}
-          defaultRarity={['HDT2', 'HDT1', 'Core', 'Void']}
+          defaultRarity={['Agito', 'HDT2']}
           nextRarity={nextWepRarity}
           rarityToString={wepRarityToString}
           IconListComponent={IconCounterList}

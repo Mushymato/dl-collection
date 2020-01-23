@@ -53,6 +53,26 @@ function initiateCollection(collectionItems) {
   });
   return initHaving;
 }
+
+function serializeCollect(collect) {
+  let collectStr = {
+    'adv': '',
+    'd': '',
+    'w': '',
+    'wp': ''
+  };
+  Object.keys(collect).forEach(type => {
+    Object.keys(collect[type]).forEach(item => {
+      if (collect[type][item] > 0) {
+        collectStr[type] += '|' + item + '#' + collect[type][item];
+      }
+    });
+  });
+  const test = btoa(collectStr['adv']);
+  console.log(collectStr['adv'].length);
+  console.log(test.length);
+}
+
 function a11yProps(index) {
   return {
     id: `full-width-tab-${index}`,
@@ -78,6 +98,8 @@ function App() {
     };
     setCollect(newCollect);
     localStorage.setItem('dl-collection', JSON.stringify(newCollect));
+
+    serializeCollect(newCollect);
   };
 
   const setAdvCollection = c => { updateCollection(c, 'adv') };

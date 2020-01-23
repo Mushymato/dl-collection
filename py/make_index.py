@@ -88,12 +88,13 @@ async def download(session, dl, save_dir, k, v):
         fn = v + '.png'
         url = dl[k]
         path = Path(__file__).resolve().parent / '../public/{}/{}'.format(save_dir, fn)
-        async with session.get(url) as resp:
-            assert resp.status == 200
-            check_target_path(path)
-            with open(path, 'wb') as f:
-                f.write(await resp.read())
-                print('download image: {}'.format(fn))
+        if not Path(path).exists():
+            async with session.get(url) as resp:
+                assert resp.status == 200
+                check_target_path(path)
+                with open(path, 'wb') as f:
+                    f.write(await resp.read())
+                    print('download image: {}'.format(fn))
     except KeyError:
         pass
 
@@ -227,6 +228,7 @@ if __name__ == '__main__':
         img = '{}_02.png'.format(d['title']['BaseId'])
         images['Wyrmprints'][img] = nm
     images['Wyrmprints']['400411_01.png'] = 'in_an_unending_world'
+    images['Wyrmprints']['400431_01.png'] = 'blossoms_in_a_new_years_sky'
     
     for k in data:
         with open('src/data/{}.json'.format(k), 'w') as f:

@@ -17,13 +17,8 @@ const useStyles = makeStyles({
             top: '-2em',
             width: 'auto',
             lineHeight: '2em',
-            textAlign: 'center'
-        },
-        '&.Weapons:before': {
-            minWidth: '3em',
-        },
-        '&.Dragons:before': {
-            minWidth: '5em',
+            textAlign: 'center',
+            minWidth: 80
         }
     },
     headerLabel: {

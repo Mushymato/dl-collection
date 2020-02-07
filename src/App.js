@@ -68,9 +68,6 @@ function serializeCollect(collect) {
       }
     });
   });
-  const test = btoa(collectStr['adv']);
-  console.log(collectStr['adv'].length);
-  console.log(test.length);
 }
 
 function a11yProps(index) {

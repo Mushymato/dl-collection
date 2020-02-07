@@ -18,7 +18,7 @@ alphafy_re = re.compile('[^a-zA-Z_]')
 
 elements = ['Flame', 'Water', 'Wind', 'Light', 'Shadow']
 weapon_types = ['Sword', 'Blade', 'Dagger', 'Axe', 'Lance', 'Bow', 'Wand', 'Staff']
-welfare_Dragons = ['Story', 'High Dragon', 'Event Welfare', 'Void', 'Event Welfare, Zodiac']
+welfare_Dragons = ['Story', 'High Dragon', 'Event Welfare', 'Collab Welfare', 'Void', 'Event Welfare, Zodiac']
 
 # static
 pattern = {

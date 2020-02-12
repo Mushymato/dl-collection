@@ -95,8 +95,6 @@ function App() {
     };
     setCollect(newCollect);
     localStorage.setItem('dl-collection', JSON.stringify(newCollect));
-
-    serializeCollect(newCollect);
   };
 
   const setAdvCollection = c => { updateCollection(c, 'adv') };
@@ -195,7 +193,7 @@ function App() {
           rarityToString={advRarityToString}
           IconListComponent={IconCheckList}
           itemType='Adventurers'
-          prefix='adv' />
+          prefix='c' />
       </TabPanel>
       <TabPanel value={idx} index={1} dir={direction}>
         <CollectionList

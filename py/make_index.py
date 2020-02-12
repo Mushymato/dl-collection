@@ -18,7 +18,7 @@ alphafy_re = re.compile('[^a-zA-Z_]')
 
 elements = ['Flame', 'Water', 'Wind', 'Light', 'Shadow']
 weapon_types = ['Sword', 'Blade', 'Dagger', 'Axe', 'Lance', 'Bow', 'Wand', 'Staff']
-welfare_Dragons = ['Story', 'High Dragon', 'Event Welfare', 'Collab Welfare', 'Void', 'Event Welfare, Zodiac']
+welfare_Dragons = ['Story', 'High Dragon', 'Void', 'Event Welfare']
 
 # static
 pattern = {
@@ -43,7 +43,7 @@ end = {
 }
 
 save_dir = {
-    'Adventurers': 'adv',
+    'Adventurers': 'c',
     'Dragons': 'd',
     'Weapons': 'w',
     'Wyrmprints': 'wp'
@@ -83,20 +83,25 @@ def check_target_path(target):
                 raise
 
 @asyncio.coroutine
-async def download(session, dl, save_dir, k, v):
+async def download(session, tbl, save_dir, k, v):
     try:
-        fn = v + '.png'
-        url = dl[k]
-        path = Path(__file__).resolve().parent / '../public/{}/{}'.format(save_dir, fn)
-        if not Path(path).exists():
-            async with session.get(url) as resp:
-                assert resp.status == 200
-                check_target_path(path)
-                with open(path, 'wb') as f:
-                    f.write(await resp.read())
-                    print('download image: {}'.format(fn))
+        fn = tbl[k] + '.png'
+        path = 'public/{}/{}'.format(save_dir, fn)
     except KeyError:
-        pass
+        if save_dir == 'wp':
+            try:
+                fn = tbl[k.replace('_01', '_02')] + '.png'
+                path = 'public/{}/{}'.format(save_dir, fn)
+            except KeyError:
+                return
+        else:
+            return
+    async with session.get(v) as resp:
+        if resp.status == 200:
+            check_target_path(path)
+            with open(path, 'wb') as f:
+                f.write(await resp.read())
+                print('download image: {}'.format(fn))
 
 async def download_images(images):
     for file_name, image_lst in images.items():
@@ -132,8 +137,8 @@ async def download_images(images):
 
         async with aiohttp.ClientSession() as session:
             await asyncio.gather(*[
-                download(session, dl, save_dir[file_name], k, v)
-                for k, v in image_lst.items()
+                download(session, image_lst, save_dir[file_name], k, v)
+                for k, v in dl.items()
             ])
 
 if __name__ == '__main__':
@@ -169,7 +174,7 @@ if __name__ == '__main__':
         ra = 'r'+d['title']['Rarity']
         av = d['title']['Availability']
         nm = snakey(d['title']['FullName'])
-        if av in welfare_Dragons or ra in ['r3', 'r4']:
+        if any(w in av for w in welfare_Dragons) or ra in ['r3', 'r4']:
             # data['Dragons'][el]['misc'][nm] = av
             data['Dragons'][el]['misc'].append(nm)
         else:
@@ -227,8 +232,8 @@ if __name__ == '__main__':
 
         img = '{}_02.png'.format(d['title']['BaseId'])
         images['Wyrmprints'][img] = nm
-    images['Wyrmprints']['400411_01.png'] = 'in_an_unending_world'
-    images['Wyrmprints']['400431_01.png'] = 'blossoms_in_a_new_years_sky'
+    # images['Wyrmprints']['400411_01.png'] = 'in_an_unending_world'
+    # images['Wyrmprints']['400431_01.png'] = 'blossoms_in_a_new_years_sky'
     
     for k in data:
         with open('src/data/{}.json'.format(k), 'w') as f:

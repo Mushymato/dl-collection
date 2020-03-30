@@ -82,7 +82,6 @@ def check_target_path(target):
             if exc.errno != errno.EEXIST:
                 raise
 
-@asyncio.coroutine
 async def download(session, tbl, save_dir, k, v):
     try:
         fn = tbl[k] + '.png'
@@ -241,4 +240,3 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(download_images(images))
-    loop.close()

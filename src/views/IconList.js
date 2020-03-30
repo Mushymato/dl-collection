@@ -55,26 +55,32 @@ const useStyles = makeStyles({
                 '&.Flame': {
                     '&:before': { backgroundColor: 'salmon' },
                     '& > img': { backgroundColor: 'salmon' },
+                    '&.mub > img': { boxShadow: '0 0 0.5em salmon', opacity: 0.8 }
                 },
                 '&.Water': {
                     '&:before': { backgroundColor: 'deepskyblue' },
                     '& > img': { backgroundColor: 'deepskyblue' },
+                    '&.mub > img': { boxShadow: '0 0 0.5em deepskyblue', opacity: 0.8 }
                 },
                 '&.Wind': {
                     '&:before': { backgroundColor: 'limegreen' },
                     '& > img': { backgroundColor: 'limegreen' },
+                    '&.mub > img': { boxShadow: '0 0 0.5em limegreen', opacity: 0.8 }
                 },
                 '&.Light': {
                     '&:before': { backgroundColor: 'gold' },
                     '& > img': { backgroundColor: 'gold' },
+                    '&.mub > img': { boxShadow: '0 0 0.5em gold', opacity: 0.8 }
                 },
                 '&.Shadow': {
                     '&:before': { backgroundColor: 'mediumpurple' },
                     '& > img': { backgroundColor: 'mediumpurple' },
+                    '&.mub > img': { boxShadow: '0 0 0.5em mediumpurple', opacity: 0.8 }
                 },
                 '&.None': {
                     '&:before': { backgroundColor: 'lightgrey' },
                     '& > img': { backgroundColor: 'lightgrey' },
+                    '&.mub > img': { boxShadow: '0 0 0.5em lightgrey', opacity: 0.8 }
                 }
             }
         }
@@ -85,6 +91,10 @@ function MC(n) {
     return n < 2 ? '☆' : '✪';
 }
 
+function mubClassname(n, ele, mub) {
+    return n < mub ? ele : clsx(ele, 'mub');
+}
+
 export function IconCheckList(props) {
     const classes = useStyles({ iconSize: 80, beforeSize: 1.2, beforeShape: 'circle', beforeColor: 'white' });
     return props.iconList.map(name => {
@@ -93,7 +103,7 @@ export function IconCheckList(props) {
         return (
             <div className={classes.iconCheck} key={nameKey}>
                 <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(n)} />
-                <label className={clsx(props.element, props.iconList[name])} htmlFor={nameKey} data-before={MC(n)} data-name={name} onContextMenu={props.decreaseState}>
+                <label className={mubClassname(n, props.element, 2)} htmlFor={nameKey} data-before={MC(n)} data-name={name} onContextMenu={props.decreaseState}>
                     <img src={`${props.prefix}/${name}.png`} title={name} alt={name} />
                 </label>
             </div>
@@ -124,7 +134,7 @@ export function IconCounterList(props) {
         return (
             <div className={classes.iconCheck} key={nameKey}>
                 <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(n)} />
-                <label className={props.element} htmlFor={nameKey} data-before={unbindStr(n)} data-name={name} onContextMenu={props.decreaseState}>
+                <label className={mubClassname(n, props.element, 5)} htmlFor={nameKey} data-before={unbindStr(n)} data-name={name} onContextMenu={props.decreaseState}>
                     <img src={`${props.prefix}/${name}.png`} title={name} alt={name} />
                 </label>
             </div>

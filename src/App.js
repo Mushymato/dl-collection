@@ -54,21 +54,21 @@ function initiateCollection(collectionItems) {
   return initHaving;
 }
 
-function serializeCollect(collect) {
-  let collectStr = {
-    'adv': '',
-    'd': '',
-    'w': '',
-    'wp': ''
-  };
-  Object.keys(collect).forEach(type => {
-    Object.keys(collect[type]).forEach(item => {
-      if (collect[type][item] > 0) {
-        collectStr[type] += '|' + item + '#' + collect[type][item];
-      }
-    });
-  });
-}
+// function serializeCollect(collect) {
+//   let collectStr = {
+//     'adv': '',
+//     'd': '',
+//     'w': '',
+//     'wp': ''
+//   };
+//   Object.keys(collect).forEach(type => {
+//     Object.keys(collect[type]).forEach(item => {
+//       if (collect[type][item] > 0) {
+//         collectStr[type] += '|' + item + '#' + collect[type][item];
+//       }
+//     });
+//   });
+// }
 
 function a11yProps(index) {
   return {
@@ -187,7 +187,9 @@ function App() {
           collection={collect.adv}
           setCollection={setAdvCollection}
           collectionItems={Adventurers}
-          maxHaving={1}
+          maxHaving={2}
+          mubCount={2}
+          mubSymbol={'✪'}
           defaultRarity={['r5', 'r4', 'r3']}
           nextRarity={nextAdvRarity}
           rarityToString={advRarityToString}
@@ -200,7 +202,9 @@ function App() {
           collection={collect.d}
           setCollection={setDraCollection}
           collectionItems={Dragons}
-          maxHaving={99}
+          maxHaving={20}
+          mubCount={5}
+          mubSymbol={String.fromCharCode(10070)}
           defaultRarity={['r5']}
           nextRarity={nextDraRarity}
           rarityToString={draRarityToString}
@@ -214,6 +218,8 @@ function App() {
           setCollection={setWepCollection}
           collectionItems={Weapons}
           maxHaving={5}
+          mubCount={5}
+          mubSymbol={String.fromCharCode(10070)}
           defaultRarity={['Agito', 'HDT2']}
           nextRarity={nextWepRarity}
           rarityToString={wepRarityToString}
@@ -227,6 +233,8 @@ function App() {
           setCollection={setWPCollection}
           collectionItems={Wyrmprints}
           maxHaving={20}
+          mubCount={5}
+          mubSymbol={String.fromCharCode(10070)}
           defaultRarity={['Limited']}
           nextRarity={nextWPRarity}
           rarityToString={wpRarityToString}

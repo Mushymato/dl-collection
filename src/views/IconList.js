@@ -61,12 +61,12 @@ const useStyles = makeStyles({
                     '& > img': { backgroundColor: 'deepskyblue' },
                 },
                 '&.Wind': {
-                    '&:before': { backgroundColor: 'lightgreen' },
-                    '& > img': { backgroundColor: 'lightgreen' },
+                    '&:before': { backgroundColor: 'limegreen' },
+                    '& > img': { backgroundColor: 'limegreen' },
                 },
                 '&.Light': {
-                    '&:before': { backgroundColor: 'khaki' },
-                    '& > img': { backgroundColor: 'khaki' },
+                    '&:before': { backgroundColor: 'gold' },
+                    '& > img': { backgroundColor: 'gold' },
                 },
                 '&.Shadow': {
                     '&:before': { backgroundColor: 'mediumpurple' },
@@ -81,14 +81,19 @@ const useStyles = makeStyles({
     }
 });
 
+function MC(n) {
+    return n < 2 ? '☆' : '✪';
+}
+
 export function IconCheckList(props) {
     const classes = useStyles({ iconSize: 80, beforeSize: 1.2, beforeShape: 'circle', beforeColor: 'white' });
     return props.iconList.map(name => {
         const nameKey = `${props.prefix}-${name}`;
+        const n = props.checkState(name);
         return (
             <div className={classes.iconCheck} key={nameKey}>
-                <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(props.checkState(name))} />
-                <label className={clsx(props.element, props.iconList[name])} htmlFor={nameKey} data-before="✓" >
+                <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(n)} />
+                <label className={clsx(props.element, props.iconList[name])} htmlFor={nameKey} data-before={MC(n)} data-name={name} onContextMenu={props.decreaseState}>
                     <img src={`${props.prefix}/${name}.png`} title={name} alt={name} />
                 </label>
             </div>
@@ -97,10 +102,10 @@ export function IconCheckList(props) {
 }
 
 function unbindStr(n) {
-    const black = String.fromCharCode(9642)
-    const white = String.fromCharCode(9643)
-    const mub = Math.floor(n / 5)
-    const ub = Math.max((n - 1) % 5, 0)
+    const black = String.fromCharCode(9642);
+    const white = String.fromCharCode(9643);
+    const mub = Math.floor(n / 5);
+    const ub = Math.max((n - 1) % 5, 0);
     const unbindDiamonds = black.repeat(ub) + white.repeat(4 - ub);
     if (n >= 5) {
         if (ub === 4) {
@@ -115,10 +120,11 @@ export function IconCounterList(props) {
     const classes = useStyles({ iconSize: 80, beforeSize: 3, beforeColor: 'black' });
     return props.iconList.map(name => {
         const nameKey = `${props.prefix}-${name}`;
+        const n = props.checkState(name);
         return (
             <div className={classes.iconCheck} key={nameKey}>
-                <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(props.checkState(name))} />
-                <label className={props.element} htmlFor={nameKey} data-before={unbindStr(props.checkState(name))} data-name={name} onContextMenu={props.decreaseState}>
+                <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(n)} />
+                <label className={props.element} htmlFor={nameKey} data-before={unbindStr(n)} data-name={name} onContextMenu={props.decreaseState}>
                     <img src={`${props.prefix}/${name}.png`} title={name} alt={name} />
                 </label>
             </div>

@@ -40,7 +40,7 @@ export default function CollectionList(props) {
         Object.keys(collectionItems).forEach(ele => {
             rarity.forEach(rare => {
                 collectionItems[ele][rare].forEach(item => {
-                    acc += Math.floor(collection[item] / 5);
+                    acc += Math.floor(collection[item] / props.mubCount);
                 })
             })
         });
@@ -126,7 +126,7 @@ export default function CollectionList(props) {
 
     let statsLabel = `${itemType}: ${have} / ${total} (${Math.floor((have / total) * 100)}%)`;
     if (haveMub > 0) {
-        statsLabel += ' [' + String.fromCharCode(10070) + `${haveMub}]`
+        statsLabel += ' [' + props.mubSymbol + `${haveMub}]`
     }
     return (
         <React.Fragment>

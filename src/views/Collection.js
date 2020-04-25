@@ -30,7 +30,7 @@ const useStyles = makeStyles({
     }
 });
 export default function CollectionList(props) {
-    const { collection, setCollection, maxHaving, collectionItems, IconListComponent, prefix, itemType, defaultRarity, nextRarity, rarityToString } = props;
+    const { collection, setCollection, maxHaving, mubCount, checkAll, collectionItems, IconListComponent, prefix, itemType, defaultRarity, nextRarity, rarityToString } = props;
     const [filters, setFilters] = useState({
         rarity: defaultRarity
     });
@@ -40,7 +40,7 @@ export default function CollectionList(props) {
         Object.keys(collectionItems).forEach(ele => {
             rarity.forEach(rare => {
                 collectionItems[ele][rare].forEach(item => {
-                    acc += Math.floor(collection[item] / props.mubCount);
+                    acc += Math.floor(collection[item] / mubCount);
                 })
             })
         });
@@ -98,7 +98,7 @@ export default function CollectionList(props) {
 
     const toggleAll = (e) => {
         const newHaving = {};
-        const newValue = !checked ? Math.min(maxHaving, 5) : 0;
+        const newValue = !checked ? checkAll : 0;
         Object.keys(collectionItems).forEach(ele => {
             filters.rarity.forEach(rare => {
                 collectionItems[ele][rare].forEach(item => {

@@ -189,6 +189,7 @@ function App() {
           collectionItems={Adventurers}
           maxHaving={2}
           mubCount={2}
+          checkAll={1}
           mubSymbol={'✪'}
           defaultRarity={['r5', 'r4', 'r3']}
           nextRarity={nextAdvRarity}
@@ -204,6 +205,7 @@ function App() {
           collectionItems={Dragons}
           maxHaving={20}
           mubCount={5}
+          checkAll={5}
           mubSymbol={String.fromCharCode(10070)}
           defaultRarity={['r5']}
           nextRarity={nextDraRarity}
@@ -217,8 +219,9 @@ function App() {
           collection={collect.w}
           setCollection={setWepCollection}
           collectionItems={Weapons}
-          maxHaving={5}
+          maxHaving={20}
           mubCount={5}
+          checkAll={5}
           mubSymbol={String.fromCharCode(10070)}
           defaultRarity={['Agito', 'HDT2']}
           nextRarity={nextWepRarity}
@@ -234,6 +237,7 @@ function App() {
           collectionItems={Wyrmprints}
           maxHaving={20}
           mubCount={5}
+          checkAll={5}
           mubSymbol={String.fromCharCode(10070)}
           defaultRarity={['Limited']}
           nextRarity={nextWPRarity}

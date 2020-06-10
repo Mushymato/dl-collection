@@ -142,7 +142,7 @@ function App() {
     if (r.length > 1) {
       return ['Limited'];
     } else {
-      return ['Agito', 'HDT2'];
+      return ['Agito2', 'Agito1', 'HDT2'];
     }
   }
   const wepRarityToString = r => {
@@ -223,7 +223,7 @@ function App() {
           mubCount={5}
           checkAll={5}
           mubSymbol={String.fromCharCode(10070)}
-          defaultRarity={['Agito', 'HDT2']}
+          defaultRarity={['Agito2', 'Agito1', 'HDT2']}
           nextRarity={nextWepRarity}
           rarityToString={wepRarityToString}
           IconListComponent={IconCounterList}

@@ -190,7 +190,7 @@ if __name__ == '__main__':
     #     'Light': 'Ruinous Wing',
     #     'Shadow': 'Abyssal Standard',
     # }
-    data['Weapons'] = {k1: {k2: [] for k2 in ['Agito', 'HDT2', 'Limited']} for k1 in elements + ['None']}
+    data['Weapons'] = {k1: {k2: [] for k2 in ['Agito2', 'Agito1', 'HDT2', 'Limited']} for k1 in elements + ['None']}
     for d in get_data(
         tables='Weapons', 
         fields='BaseId,FormId,CraftNodeId,WeaponName,Type,Rarity,ElementalType,Availability', 
@@ -201,10 +201,12 @@ if __name__ == '__main__':
         wt = d['title']['Type']
         av = d['title']['Availability']
         nm = snakey(d['title']['WeaponName'])
+        cn = d['title']['CraftNodeId']
         if av == 'High Dragon':
-            cn = d['title']['CraftNodeId']
             # data['Weapons'][el]['HDT'+cn[0]][nm] = wt
             data['Weapons'][el]['HDT'+cn[0]].append(nm)
+        elif av == 'Agito':
+            data['Weapons'][el]['Agito'+cn[0]].append(nm)
         else:
             # data['Weapons'][el][av][nm] = wt
             data['Weapons'][el][av].append(nm)

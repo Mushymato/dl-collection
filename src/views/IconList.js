@@ -104,7 +104,7 @@ export function IconCheckList(props) {
             <div className={classes.iconCheck} key={nameKey}>
                 <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(n)} />
                 <label className={mubClassname(n, props.element, 2)} htmlFor={nameKey} data-before={MC(n)} data-name={name} onContextMenu={props.decreaseState}>
-                    <img src={`${props.prefix}/${name}.png`} title={name} alt={name} />
+                    <img src={`${process.env.PUBLIC_URL}/${props.prefix}/${name}.png`} title={name} alt={name} />
                 </label>
             </div>
         );
@@ -135,7 +135,7 @@ export function IconCounterList(props) {
             <div className={classes.iconCheck} key={nameKey}>
                 <input type="checkbox" className={classes.iconCB} id={nameKey} name={name} onChange={props.updateState} checked={Boolean(n)} />
                 <label className={mubClassname(n, props.element, 5)} htmlFor={nameKey} data-before={unbindStr(n)} data-name={name} onContextMenu={props.decreaseState}>
-                    <img src={`${props.prefix}/${name}.png`} title={name} alt={name} />
+                    <img src={`${process.env.PUBLIC_URL}/${props.prefix}/${name}.png`} title={name} alt={name} />
                 </label>
             </div>
         );

@@ -9,11 +9,12 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import Box from '@material-ui/core/Box';
 
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import { ELEMENTS, DEFAULT_HAVE } from '../data/Mapping';
+import { ELEMENTS, ELEMENT_COLORS, DEFAULT_HAVE } from '../data/Mapping';
 
 const useStyles = makeStyles({
     root: {
@@ -23,6 +24,12 @@ const useStyles = makeStyles({
     cardIcon: {
         transition: 'width 0.1s linear 0.1s, height 0.1s linear 0.1s',
         margin: 'auto',
+        height: 120,
+        width: 120
+    },
+    cardIconEditing: {
+        height: 72,
+        width: 72
     },
     cardName: {
         padding: 0,
@@ -35,7 +42,6 @@ const useStyles = makeStyles({
         padding: 0,
         fontWeight: 700,
         fontSize: '0.75em',
-        whiteSpace: 'pre',
         textTransform: 'none',
         letterSpacing: -1,
         '& .MuiButton-endIcon': {
@@ -43,18 +49,76 @@ const useStyles = makeStyles({
             padding: 0
         }
     },
+    cardNameNoWrap: {
+        whiteSpace: 'pre'
+    },
     cardEdit: {
-        paddingTop: 0,
+        padding: 0,
+        margin: 0,
+        paddingLeft: 10,
+        paddingRight: 10,
         height: 0,
-        margin: 'auto',
+        visibility: 'hidden',
         transition: 'visibility 0.1s linear 0.1s, height 0.1s linear 0.1s',
     },
-    Flame: { backgroundColor: 'rgb(255, 153, 153)' },
-    Water: { backgroundColor: 'rgb(153, 194, 255)' },
-    Wind: { backgroundColor: 'rgb(153, 255, 153)' },
-    Light: { backgroundColor: 'rgb(255, 255, 153)' },
-    Shadow: { backgroundColor: 'rgb(230, 153, 255)' },
-    None: { backgroundColor: 'rgb(217, 217, 217)' }
+    cardEditEditing: {
+        height: 48,
+        visibility: 'visible'
+    },
+    mcIcon: {
+        backgroundImage: `url("${process.env.PUBLIC_URL}/ui/mc.png")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        textAlign: 'center',
+        width: 30,
+        height: 30,
+        lineHeight: '30px',
+        fontWeight: 700,
+        color: 'white',
+        fontSize: '0.9em',
+        textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+        // fontSize: '1em',
+        // '-webkit-text-stroke': '1px black',
+        position: 'absolute',
+        top: 45,
+        left: 4
+    },
+    mcIconMaxed: {
+        color: '#ffcc00'
+    },
+    unbindIcons: {
+        position: 'absolute',
+        bottom: 0
+    },
+    mubCount: {
+        backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ubc.png")`,
+        lineHeight: '20px',
+        fontWeight: 700,
+        textAlign: 'center',
+        fontSize: '0.9em',
+    },
+    ubIcon: {
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        width: 16,
+        height: 20
+    },
+    ub0: {
+        backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ub0.png")`,
+    },
+    ubN: {
+        backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ubn.png")`,
+    },
+    ubM: {
+        backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ubm.png")`,
+    },
+
+    Flame: { backgroundColor: ELEMENT_COLORS.Flame },
+    Water: { backgroundColor: ELEMENT_COLORS.Water },
+    Wind: { backgroundColor: ELEMENT_COLORS.Wind },
+    Light: { backgroundColor: ELEMENT_COLORS.Light },
+    Shadow: { backgroundColor: ELEMENT_COLORS.Shadow },
+    Null: { backgroundColor: ELEMENT_COLORS.Null }
 });
 
 const insertLinebreak = (name, locale) => {
@@ -67,35 +131,57 @@ const insertLinebreak = (name, locale) => {
     }
 }
 
+function BaseListingItem(props) {
+    const { locale, entry, have, lcHaving, rcHaving, editing, toggleEditing, cardIconUrl, CardIconDeco, CardEditFields } = props;
+    const classes = useStyles();
+    const cardName = entry[`Name${locale}`];
+    return (
+        <Grid item>
+            <Card className={clsx(classes.root, have && (classes[ELEMENTS[entry.Element]] || classes.Null))}>
+                <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
+                    <CardMedia
+                        className={clsx(classes.cardIcon, editing && classes.cardIconEditing)}
+                        image={cardIconUrl}
+                        title={cardName} alt={cardName} >
+                        <CardIconDeco />
+                    </CardMedia>
+                </CardActionArea>
+                <CardContent
+                    className={classes.cardName}>
+                    <Button
+                        className={clsx(classes.cardNameText, locale !== 'EN' && classes.cardNameNoWrap)}
+                        size="small"
+                        endIcon={editing ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        onClick={toggleEditing}>
+                        {insertLinebreak(cardName, locale)}
+                    </Button>
+                </CardContent>
+                <CardActions className={clsx(classes.cardEdit, editing && classes.cardEditEditing)} >
+                    <CardEditFields />
+                </CardActions>
+            </Card>
+        </Grid>
+    );
+}
+
 export function CharaListingItem(props) {
     const { locale, id, entry, have, updateHaving, deleteHaving } = props;
     const classes = useStyles();
 
-    const charaName = entry[`Name${locale}`];
     const [editing, setEditing] = useState(false);
-    const toggleEditing = (e) => {
-        setEditing(!editing);
-    }
+    const toggleEditing = (e) => { setEditing(!editing); }
 
     const maxLevel = entry.Spiral ? 100 : 80;
     const lv = have ? have.lv : '';
     const validateLv = (e) => {
         const level = parseInt(e.target.value);
         let nextLevel = level;
-        if (isNaN(level) || level < 1) {
-            nextLevel = '';
-        } else if (level > maxLevel) {
-            nextLevel = maxLevel;
-        }
+        if (isNaN(level) || level < 1) { nextLevel = ''; }
+        else if (level > maxLevel) { nextLevel = maxLevel; }
         if (nextLevel) {
-            if (have) {
-                updateHaving(id, { lv: nextLevel });
-            } else {
-                updateHaving(id, { lv: nextLevel, mc: 1 });
-            }
-        } else {
-            deleteHaving(id);
-        }
+            if (have) { updateHaving(id, { lv: nextLevel }); }
+            else { updateHaving(id, { lv: nextLevel, mc: 1 }); }
+        } else { deleteHaving(id); }
         updateRarity();
     }
 
@@ -104,21 +190,13 @@ export function CharaListingItem(props) {
     const validateMc = (e) => {
         const manaCircle = parseInt(e.target.value);
         let nextMc = manaCircle;
-        if (isNaN(manaCircle) || manaCircle < 1) {
-            nextMc = '';
-        } else if (manaCircle > maxManaCircle) {
-            nextMc = maxManaCircle;
-        }
+        if (isNaN(manaCircle) || manaCircle < 1) { nextMc = ''; }
+        else if (manaCircle > maxManaCircle) { nextMc = maxManaCircle; }
         if (nextMc) {
-            if (have) {
-                updateHaving(id, { mc: nextMc });
-            } else {
-                updateHaving(id, { lv: 1, mc: nextMc });
-            }
+            if (have) { updateHaving(id, { mc: nextMc }); }
+            else { updateHaving(id, { lv: 1, mc: nextMc }); }
             updateHaving(id, { mc: nextMc });
-        } else {
-            deleteHaving(id);
-        }
+        } else { deleteHaving(id); }
         updateRarity();
     }
 
@@ -139,56 +217,115 @@ export function CharaListingItem(props) {
 
     const setDefaultHave = () => {
         setRarity(minRarity);
-        const nextHave = DEFAULT_HAVE[minRarity];
+        const nextHave = DEFAULT_HAVE.chara[minRarity];
         updateHaving(id, nextHave);
     }
 
     const lcHaving = (e) => {
-        if (!have || (have.lv === maxLevel && have.mc === maxManaCircle)) {
-            setDefaultHave();
-        } else {
-            setMaxHave();
-        }
+        if (!have || (have.lv === maxLevel && have.mc === maxManaCircle)) { setDefaultHave(); }
+        else { setMaxHave(); }
     }
     const rcHaving = (e) => {
         if (have) { setRarity(minRarity); deleteHaving(id); }
         e.preventDefault();
     }
 
-    return (
-        <Grid item>
-            <Card className={clsx(classes.root, have && classes[ELEMENTS[entry.Element]])}>
-                <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
-                    <CardMedia
-                        className={classes.cardIcon}
-                        image={`${process.env.PUBLIC_URL}/chara/${id}_r0${rarity}.png`}
-                        title={charaName} alt={id}
-                        style={{
-                            height: (editing ? 72 : 120),
-                            width: (editing ? 72 : 120)
-                        }}>
-                    </CardMedia>
-                </CardActionArea>
-                <CardContent
-                    className={classes.cardName}>
-                    <Button
-                        className={classes.cardNameText}
-                        size="small"
-                        endIcon={editing ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                        onClick={toggleEditing}
-                    >
-                        {insertLinebreak(charaName, locale)}
-                    </Button>
-                </CardContent>
-                <CardActions className={classes.cardEdit}
-                    style={{
-                        height: (editing ? 48 : 0),
-                        visibility: (editing ? 'visible' : 'hidden')
-                    }}>
-                    <TextField label="Lv" value={lv} onInput={validateLv} />
-                    <TextField label="MC" value={mc} onInput={validateMc} />
-                </CardActions>
-            </Card>
-        </Grid>
+    const CardIconDeco = () => (
+        <React.Fragment>
+            {(!editing && have ? (have.mc > 0) : false) &&
+                <Box className={clsx(classes.mcIcon, have.mc === maxManaCircle && classes.mcIconMaxed)}>{mc}</Box>
+            }
+        </React.Fragment>
     );
+
+    const CardEditFields = () => (
+        <React.Fragment>
+            <TextField label="Lv" value={lv} onInput={validateLv.bind(this)} />
+            <TextField label="MC" value={mc} onInput={validateMc.bind(this)} />
+        </React.Fragment>
+    );
+
+    return (<BaseListingItem
+        locale={locale}
+        entry={entry}
+        have={have}
+        lcHaving={lcHaving}
+        rcHaving={rcHaving}
+        editing={editing}
+        toggleEditing={toggleEditing}
+        cardIconUrl={`${process.env.PUBLIC_URL}/chara/${id}_r0${rarity}.png`}
+        CardIconDeco={CardIconDeco}
+        CardEditFields={CardEditFields} />)
+}
+
+export function standardCardIcon(category, id, count) {
+    return `${process.env.PUBLIC_URL}/${category}/${id}.png`
+}
+
+export function amuletCardIcon(category, id, count) {
+    if (count > 3) { return `${process.env.PUBLIC_URL}/${category}/${id}_02.png`; }
+    else { return `${process.env.PUBLIC_URL}/${category}/${id}_01.png`; }
+}
+
+export function UnbindableListingItem(props) {
+    const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
+    const cardIconFn = props.cardIconFn || standardCardIcon;
+    const classes = useStyles();
+
+    const [editing, setEditing] = useState(false);
+    const toggleEditing = (e) => { setEditing(!editing); }
+
+    const count = have ? have.c : '';
+    const validateCount = (e) => {
+        const nextC = parseInt(e.target.value);
+        if (isNaN(nextC) || nextC <= 0) { deleteHaving(id); }
+        else { updateHaving(id, { c: nextC }); }
+    }
+
+    const lcHaving = (e) => {
+        const dh = DEFAULT_HAVE[category][entry.Rarity];
+        const step = (count === '' || count < dh.c ? 1 : dh.c);
+        if (!have) { updateHaving(id, dh); }
+        else { updateHaving(id, { c: count + step }); }
+    }
+    const rcHaving = (e) => {
+        if (have) {
+            const dh = DEFAULT_HAVE[category][entry.Rarity];
+            const nextC = count - (count === '' || count < dh.c ? 1 : dh.c);
+            if (nextC <= 0) { deleteHaving(id); }
+            else { updateHaving(id, { c: nextC }); }
+        }
+        e.preventDefault();
+    }
+
+    const CardIconDeco = () => {
+        if (editing || !have) { return <React.Fragment></React.Fragment>; }
+        const mub = (count / 5 >> 0);
+        const r = Math.max((count - 1) % 5, 0);
+        return (
+            <Grid container className={classes.unbindIcons} justify="center">
+                {[0, 1, 2, 3].map((i) =>
+                    (<Grid item className={clsx(classes.ubIcon, (r >= 4 ? classes.ubM : (r > i ? classes.ubN : classes.ub0)))} />))}
+                {count > 5 && <Grid item className={clsx(classes.ubIcon, classes.mubCount)}>{mub}</Grid>}
+            </Grid>
+        );
+    };
+
+    const CardEditFields = () => (
+        <React.Fragment>
+            <TextField label="Count" value={count} onInput={validateCount.bind(this)} />
+        </React.Fragment>
+    );
+
+    return (<BaseListingItem
+        locale={locale}
+        entry={entry}
+        have={have}
+        lcHaving={lcHaving}
+        rcHaving={rcHaving}
+        editing={editing}
+        toggleEditing={toggleEditing}
+        cardIconUrl={cardIconFn(category, id, count)}
+        CardIconDeco={CardIconDeco}
+        CardEditFields={CardEditFields} />)
 }

@@ -44,8 +44,7 @@ const useStyles = makeStyles({
     },
     radioRoot: {
         margin: 0,
-        padding: 0,
-        borderRadius: 0
+        padding: 0
     },
     radioIcon: {
         height: 25
@@ -54,7 +53,9 @@ const useStyles = makeStyles({
         opacity: 0.5
     },
     availButton: {
-        width: '100%'
+        width: '100%',
+        maxWidth: 200,
+        textTransform: 'none'
     },
     availChecks: {
         paddingTop: 5,
@@ -63,7 +64,7 @@ const useStyles = makeStyles({
     }
 });
 
-export function CharaListingControls(props) {
+function ListingControls(props) {
     const {
         locale, minRarity, maxRarity,
         sort, handleSort, sortOptions,
@@ -75,11 +76,8 @@ export function CharaListingControls(props) {
     const classes = useStyles();
 
     const handleBoolCheckFilters = (e) => {
-        if (e.target.checked) {
-            addFilter(e.target.name);
-        } else {
-            removeFilter(e.target.name);
-        }
+        if (e.target.checked) { addFilter(e.target.name); }
+        else { removeFilter(e.target.name); }
     }
 
     const radioFilterValues = {
@@ -89,11 +87,8 @@ export function CharaListingControls(props) {
         'Rarity': Object.keys(RARITIES).filter(r => (r == 0 || (r >= minRarity && r <= maxRarity))).reduce((res, key) => { res[key] = RARITIES[key]; return res; }, {})
     }
     const handleRadioFilter = (e) => {
-        if (e.target.value === "0") {
-            removeFilter(e.target.name);
-        } else {
-            addFilter(e.target.name, e.target.value);
-        }
+        if (e.target.value === "0") { removeFilter(e.target.name); }
+        else { addFilter(e.target.name, e.target.value); }
     };
 
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -103,19 +98,14 @@ export function CharaListingControls(props) {
 
     const handleAvail = (e) => {
         let nextAvail = filters.Availability || [];
-        if (e.target.checked) {
-            nextAvail.push(e.target.name);
-        } else {
+        if (e.target.checked) { nextAvail.push(e.target.name); }
+        else {
             const index = nextAvail.indexOf(e.target.name);
             console.log(index);
             if (index >= 0) { nextAvail.splice(index, 1); }
         }
-        console.log(nextAvail)
-        if (nextAvail.length === 0) {
-            removeFilter('Availability');
-        } else {
-            addFilter('Availability', nextAvail);
-        }
+        if (nextAvail.length === 0) { removeFilter('Availability'); }
+        else { addFilter('Availability', nextAvail); }
     }
 
     const clearAvail = (e) => { removeFilter('Availability'); }
@@ -163,7 +153,7 @@ export function CharaListingControls(props) {
                             </RadioGroup>
                         </FormControl>
                     </Grid>))}
-                <Grid item align="center" xs>
+                <Grid item xs>
                     <Button onClick={handleClick} variant="outlined" className={classes.availButton}>Availability</Button>
                     <Popover
                         open={open}
@@ -174,7 +164,7 @@ export function CharaListingControls(props) {
                         <FormGroup className={classes.availChecks}>
                             <Button onClick={clearAvail}>Clear</Button>
                             {availabilities.map((av) => (
-                                <FormControlLabel
+                                <FormControlLabel key={av}
                                     control={<Checkbox onChange={handleAvail.bind(this)} name={av} checked={Boolean(filters.Availability && filters.Availability.includes(av))} color="primary" />}
                                     label={av} />
                             ))}
@@ -185,3 +175,5 @@ export function CharaListingControls(props) {
         </AppBar >
     )
 }
+
+export default ListingControls;

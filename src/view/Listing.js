@@ -2,6 +2,7 @@ import React, { Fragment, useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 
 import { DEFAULT_HAVE } from '../data/Mapping';
+import ListingControls from './ListingControls';
 
 const SortMethods = {
     ASC: {
@@ -50,19 +51,22 @@ const saveLocalObj = (storeKey, obj) => {
 }
 
 function Listing(props) {
-    const { locale, entries, availabilities, storeKey, minRarity, maxRarity, sortOptions, radioFilters, ControlComponent, ItemComponent } = props;
+    const { locale, entries, availabilities, storeKey, cardIconFn, minRarity, maxRarity, sortOptions, radioFilters, ItemComponent } = props;
 
-    const [sort, setSort] = useState('byElement');
+    const fullStoreKey = `dl-collection-${storeKey}`;
+
+    const storeSortKey = `${fullStoreKey}-sorting`;
+    const [sort, setSort] = useState(localStorage.getItem(storeSortKey) || 'byID');
     const handleSort = (e) => {
         setSort(e.target.value);
+        localStorage.setItem(storeSortKey, e.target.value);
     }
-    const [order, setOrder] = useState('ASC');
+    const storeSortOrderKey = `${fullStoreKey}-sorting-order`;
+    const [order, setOrder] = useState(localStorage.getItem(storeSortOrderKey) || 'ASC');
     const toggleOrder = (e) => {
-        if (order === 'ASC') {
-            setOrder('DSC');
-        } else {
-            setOrder('ASC');
-        }
+        const nextOrder = (order === 'ASC' ? 'DSC' : 'ASC');
+        setOrder(nextOrder);
+        localStorage.setItem(storeSortOrderKey, nextOrder);
     }
     const sorted = (entries) => {
         switch (sort) {
@@ -73,23 +77,23 @@ function Listing(props) {
         }
     }
 
-    const [having, setHaving] = useState(loadLocalObj(storeKey));
+    const [having, setHaving] = useState(loadLocalObj(fullStoreKey));
     const updateHaving = (id, changes) => {
         const newHaving = {
             ...having,
             [id]: { ...having[id], ...changes }
         };
         setHaving(newHaving);
-        saveLocalObj(storeKey, newHaving);
+        saveLocalObj(fullStoreKey, newHaving);
     }
     const deleteHaving = (id) => {
         const newHaving = { ...having };
         delete newHaving[id];
         setHaving(newHaving);
-        saveLocalObj(storeKey, newHaving);
+        saveLocalObj(fullStoreKey, newHaving);
     }
 
-    const storeFilterKey = `${storeKey}-filters`;
+    const storeFilterKey = `${fullStoreKey}-filters`;
     const [filters, setFilters] = useState(loadLocalObj(storeFilterKey));
     const addFilter = (filterType, target) => {
         let newFilters = { ...filters };
@@ -130,16 +134,16 @@ function Listing(props) {
         let newHaving = {};
         if (!majorityHaving) {
             for (const id of visibleEntries) {
-                newHaving[id] = DEFAULT_HAVE[entries[id].Rarity];
+                newHaving[id] = DEFAULT_HAVE[storeKey][entries[id].Rarity];
             }
         }
         setHaving(newHaving);
-        saveLocalObj(storeKey, newHaving);
+        saveLocalObj(fullStoreKey, newHaving);
     }
 
     return (
         <Fragment>
-            <ControlComponent
+            <ListingControls
                 locale={locale}
                 minRarity={minRarity}
                 maxRarity={maxRarity}
@@ -163,6 +167,8 @@ function Listing(props) {
                         locale={locale}
                         id={id}
                         entry={entries[id]}
+                        category={storeKey}
+                        cardIconFn={cardIconFn}
                         have={having[id]}
                         updateHaving={updateHaving}
                         deleteHaving={deleteHaving}

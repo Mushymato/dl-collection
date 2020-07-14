@@ -9,11 +9,9 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Hidden from '@material-ui/core/Hidden';
 
 import Listing from './view/Listing';
-import { CharaListingControls } from './view/ListingControls';
-import { CharaListingItem } from './view/ListingItems';
+import { CharaListingItem, UnbindableListingItem, amuletCardIcon } from './view/ListingItems';
 
 import TextLabel from './data/locale.json';
 import Chara from './data/chara.json';
@@ -56,9 +54,10 @@ function a11yProps(index) {
 }
 
 function App() {
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx] = useState(parseInt(localStorage.getItem('dl-collection-tab')) || 0);
   const handleTabs = (e, newIdx) => {
     setIdx(newIdx);
+    localStorage.setItem('dl-collection-tab', newIdx);
   };
 
   const [locale, setLocale] = useState(localStorage.getItem('dl-collection-locale') || 'EN');
@@ -85,21 +84,20 @@ function App() {
       <AppBar position="sticky" color="default">
         <Toolbar disableGutters={true}>
           <IconButton onClick={nextLocale} color="primary"><Box fontFamily="monospace">{locale}</Box></IconButton>
-          <Hidden xsDown>
-            <Tabs
-              value={idx}
-              onChange={handleTabs}
-              indicatorColor="primary"
-              textColor="primary"
-              variant="fullWidth"
-              style={{ margin: 'auto', width: '100%' }}
-            >
-              <Tab label={TextLabel[locale].ADVENTURERS} {...a11yProps(0)} />
-              <Tab label={TextLabel[locale].DRAGONS} {...a11yProps(1)} />
-              <Tab label={TextLabel[locale].WEAPONS} {...a11yProps(2)} />
-              <Tab label={TextLabel[locale].AMULETS} {...a11yProps(3)} />
-            </Tabs>
-          </Hidden>
+          <Tabs
+            value={idx}
+            onChange={handleTabs}
+            indicatorColor="primary"
+            textColor="primary"
+            variant="scrollable"
+            scrollButtons="auto"
+            style={{ margin: 'auto', width: '100%' }}
+          >
+            <Tab label={TextLabel[locale].ADVENTURERS} {...a11yProps(0)} />
+            <Tab label={TextLabel[locale].DRAGONS} {...a11yProps(1)} />
+            <Tab label={TextLabel[locale].WEAPONS} {...a11yProps(2)} />
+            <Tab label={TextLabel[locale].AMULETS} {...a11yProps(3)} />
+          </Tabs>
         </Toolbar>
       </AppBar>
       <TabPanel value={idx} index={0} dir={direction}>
@@ -107,18 +105,54 @@ function App() {
           locale={locale}
           entries={Chara}
           availabilities={Availabilities.Chara}
-          storeKey={'dl-collection-chara'}
+          storeKey={'chara'}
           minRarity={3}
           maxRarity={5}
           sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity']}
           radioFilters={['Element', 'Weapon', 'Rarity']}
-          ControlComponent={CharaListingControls}
           ItemComponent={CharaListingItem}
         />
       </TabPanel>
-      <TabPanel value={idx} index={1} dir={direction}>Bloop</TabPanel>
-      <TabPanel value={idx} index={2} dir={direction}>Blorp</TabPanel>
-      <TabPanel value={idx} index={3} dir={direction}>Blarg</TabPanel>
+      <TabPanel value={idx} index={1} dir={direction}>
+        <Listing
+          locale={locale}
+          entries={Dragon}
+          availabilities={Availabilities.Dragon}
+          storeKey={'dragon'}
+          minRarity={3}
+          maxRarity={5}
+          sortOptions={['byID', 'byName', 'byElement', 'byRarity']}
+          radioFilters={['Element', 'Rarity']}
+          ItemComponent={UnbindableListingItem}
+        />
+      </TabPanel>
+      <TabPanel value={idx} index={2} dir={direction}>
+        <Listing
+          locale={locale}
+          entries={Weapon}
+          availabilities={Availabilities.Weapon}
+          storeKey={'weapon'}
+          minRarity={2}
+          maxRarity={6}
+          sortOptions={['byID', 'byName', 'byElement', 'byRarity']}
+          radioFilters={['Element', 'Rarity']}
+          ItemComponent={UnbindableListingItem}
+        />
+      </TabPanel>
+      <TabPanel value={idx} index={3} dir={direction}>
+        <Listing
+          locale={locale}
+          entries={Amulet}
+          availabilities={Availabilities.Amulet}
+          storeKey={'amulet'}
+          cardIconFn={amuletCardIcon}
+          minRarity={2}
+          maxRarity={5}
+          sortOptions={['byID', 'byName', 'byRarity']}
+          radioFilters={['Rarity']}
+          ItemComponent={UnbindableListingItem}
+        />
+      </TabPanel>
     </ThemeProvider>
   );
 }

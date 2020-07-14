@@ -1,5 +1,6 @@
 import React, { Fragment, useState } from 'react';
 import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
 
 import { DEFAULT_HAVE } from '../data/Mapping';
 import ListingControls from './ListingControls';
@@ -125,7 +126,8 @@ function Listing(props) {
     }
 
     const visibleEntries = sorted(entries).filter(checkFilter);
-    const majorityHaving = having && Object.keys(having).length > 0 && visibleEntries.reduce((res, id) => (res + (having[id] ? 1 : 0)), 0) > (visibleEntries.length / 2 >> 0)
+    const visibleHave = visibleEntries.reduce((res, id) => (res + (having[id] ? 1 : 0)), 0);
+    const majorityHaving = having && Object.keys(having).length > 0 && visibleHave > (visibleEntries.length / 2 >> 0);
     const toggleAllHaving = () => {
         let newHaving = { ...having };
         if (!majorityHaving) {
@@ -139,6 +141,11 @@ function Listing(props) {
         }
         setHaving(newHaving);
         saveLocalObj(fullStoreKey, newHaving);
+    }
+
+    const statLabel = (title) => {
+        const p = ((100 * visibleHave / visibleEntries.length) >> 0)
+        return `${title} ${visibleHave} / ${visibleEntries.length} (${p}%)`
     }
 
     return (
@@ -160,7 +167,8 @@ function Listing(props) {
                 radioFilters={radioFilters}
                 availabilities={availabilities}
             />
-            <Grid container spacing={1} alignItems="flex-start" justify="flex-start" style={{ marginTop: 10 }}>
+            <Typography component="h2" gutterBottom>{statLabel('Completion: ')}</Typography>
+            <Grid container spacing={1} alignItems="flex-start" justify="flex-start">
                 {visibleEntries.map((id) => (
                     <ItemComponent
                         key={id}

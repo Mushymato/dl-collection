@@ -287,8 +287,7 @@ export function UnbindableListingItem(props) {
     }
     const rcHaving = (e) => {
         if (have) {
-            const dh = DEFAULT_HAVE[category][entry.Rarity];
-            const nextC = count - (count === '' || count < dh.c ? 1 : dh.c);
+            const nextC = count - 1;
             if (nextC <= 0) { deleteHaving(id); }
             else { updateHaving(id, { c: nextC }); }
         }

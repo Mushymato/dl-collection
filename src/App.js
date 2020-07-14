@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState } from 'react';
 
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
@@ -9,6 +9,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import Hidden from '@material-ui/core/Hidden';
 
 import Listing from './view/Listing';
 import { CharaListingControls } from './view/ListingControls';
@@ -19,6 +20,7 @@ import Chara from './data/chara.json';
 import Dragon from './data/dragon.json';
 import Weapon from './data/weapon.json';
 import Amulet from './data/amulet.json';
+import Availabilities from './data/availabilities.json';
 
 const theme = createMuiTheme({
   typography: {
@@ -77,35 +79,39 @@ function App() {
         break;
     }
   };
-  const getLocale = () => {
-    return TextLabel[locale];
-  }
 
   return (
     <ThemeProvider theme={theme}>
       <AppBar position="sticky" color="default">
         <Toolbar disableGutters={true}>
           <IconButton onClick={nextLocale} color="primary"><Box fontFamily="monospace">{locale}</Box></IconButton>
-          <Tabs
-            value={idx}
-            onChange={handleTabs}
-            indicatorColor="primary"
-            textColor="primary"
-            variant="fullWidth"
-            style={{ margin: 'auto', width: '100%' }}
-          >
-            <Tab label={getLocale().ADVENTURERS} {...a11yProps(0)} />
-            <Tab label={getLocale().DRAGONS} {...a11yProps(1)} />
-            <Tab label={getLocale().WEAPONS} {...a11yProps(2)} />
-            <Tab label={getLocale().AMULETS} {...a11yProps(3)} />
-          </Tabs>
+          <Hidden xsDown>
+            <Tabs
+              value={idx}
+              onChange={handleTabs}
+              indicatorColor="primary"
+              textColor="primary"
+              variant="fullWidth"
+              style={{ margin: 'auto', width: '100%' }}
+            >
+              <Tab label={TextLabel[locale].ADVENTURERS} {...a11yProps(0)} />
+              <Tab label={TextLabel[locale].DRAGONS} {...a11yProps(1)} />
+              <Tab label={TextLabel[locale].WEAPONS} {...a11yProps(2)} />
+              <Tab label={TextLabel[locale].AMULETS} {...a11yProps(3)} />
+            </Tabs>
+          </Hidden>
         </Toolbar>
       </AppBar>
       <TabPanel value={idx} index={0} dir={direction}>
         <Listing
           locale={locale}
           entries={Chara}
+          availabilities={Availabilities.Chara}
           storeKey={'dl-collection-chara'}
+          minRarity={3}
+          maxRarity={5}
+          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity']}
+          radioFilters={['Element', 'Weapon', 'Rarity']}
           ControlComponent={CharaListingControls}
           ItemComponent={CharaListingItem}
         />

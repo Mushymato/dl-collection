@@ -26,19 +26,22 @@ const useStyles = makeStyles({
     },
     cardName: {
         padding: 0,
-        textAlign: 'center',
         height: '2.5em'
     },
     cardNameText: {
         width: '100%',
         height: '100%',
         margin: 0,
-        paddingTop: 0,
-        paddingBottom: 0,
+        padding: 0,
         fontWeight: 700,
         fontSize: '0.75em',
-        whiteSpace: 'pre-line',
-        textTransform: 'none'
+        whiteSpace: 'pre',
+        textTransform: 'none',
+        letterSpacing: -1,
+        '& .MuiButton-endIcon': {
+            margin: 0,
+            padding: 0
+        }
     },
     cardEdit: {
         paddingTop: 0,
@@ -75,7 +78,6 @@ export function CharaListingItem(props) {
     }
 
     const maxLevel = entry.Spiral ? 100 : 80;
-    // const [lv, setLv] = useState(have ? have.lv : '');
     const lv = have ? have.lv : '';
     const validateLv = (e) => {
         const level = parseInt(e.target.value);
@@ -89,19 +91,15 @@ export function CharaListingItem(props) {
             if (have) {
                 updateHaving(id, { lv: nextLevel });
             } else {
-                // setMc(1);
                 updateHaving(id, { lv: nextLevel, mc: 1 });
             }
         } else {
-            // setMc('');
             deleteHaving(id);
         }
-        // setLv(nextLevel);
         updateRarity();
     }
 
     const maxManaCircle = entry.Spiral ? 70 : 50;
-    // const [mc, setMc] = useState(have ? have.mc : '');
     const mc = have ? have.mc : '';
     const validateMc = (e) => {
         const manaCircle = parseInt(e.target.value);
@@ -115,15 +113,12 @@ export function CharaListingItem(props) {
             if (have) {
                 updateHaving(id, { mc: nextMc });
             } else {
-                // setLv(1);
                 updateHaving(id, { lv: 1, mc: nextMc });
             }
             updateHaving(id, { mc: nextMc });
         } else {
-            // setLv('');
             deleteHaving(id);
         }
-        // setMc(nextMc);
         updateRarity();
     }
 
@@ -136,24 +131,34 @@ export function CharaListingItem(props) {
         setRarity(minRarity);
     }
 
-    const toggleHaving = () => {
+    const setMaxHave = () => {
+        setRarity(5);
+        const nextHave = { lv: maxLevel, mc: maxManaCircle };
+        updateHaving(id, nextHave);
+    }
+
+    const setDefaultHave = () => {
         setRarity(minRarity);
-        if (have) {
-            deleteHaving(id);
-            // setLv('');
-            // setMc('');
+        const nextHave = DEFAULT_HAVE[minRarity];
+        updateHaving(id, nextHave);
+    }
+
+    const lcHaving = (e) => {
+        if (!have || (have.lv === maxLevel && have.mc === maxManaCircle)) {
+            setDefaultHave();
         } else {
-            const nextHave = DEFAULT_HAVE[minRarity];
-            updateHaving(id, nextHave);
-            // setLv(nextHave.lv);
-            // setMc(nextHave.mc);
+            setMaxHave();
         }
+    }
+    const rcHaving = (e) => {
+        if (have) { setRarity(minRarity); deleteHaving(id); }
+        e.preventDefault();
     }
 
     return (
         <Grid item>
-            <Card className={have ? clsx(classes.root, classes[ELEMENTS[entry.Element]]) : classes.root}>
-                <CardActionArea onClick={toggleHaving}>
+            <Card className={clsx(classes.root, have && classes[ELEMENTS[entry.Element]])}>
+                <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
                     <CardMedia
                         className={classes.cardIcon}
                         image={`${process.env.PUBLIC_URL}/chara/${id}_r0${rarity}.png`}
@@ -168,6 +173,7 @@ export function CharaListingItem(props) {
                     className={classes.cardName}>
                     <Button
                         className={classes.cardNameText}
+                        size="small"
                         endIcon={editing ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         onClick={toggleEditing}
                     >

@@ -5,7 +5,7 @@ import { DEFAULT_HAVE } from '../data/Mapping';
 
 const SortMethods = {
     ASC: {
-        byId: (entries) => (Object.keys(entries)),
+        byID: (entries) => (Object.keys(entries)),
         byNameEN: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameEN.localeCompare(entries[b].NameEN))),
         byNameJP: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameJP.localeCompare(entries[b].NameJP))),
         byNameCN: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameCN.localeCompare(entries[b].NameCN))),
@@ -14,7 +14,7 @@ const SortMethods = {
         byRarity: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
     },
     DSC: {
-        byId: (entries) => (Object.keys(entries).reverse()),
+        byID: (entries) => (Object.keys(entries).reverse()),
         byNameEN: (entries) => Object.keys(entries).sort((b, a) => (entries[a].NameEN.localeCompare(entries[b].NameEN))),
         byNameJP: (entries) => Object.keys(entries).sort((b, a) => (entries[a].NameJP.localeCompare(entries[b].NameJP))),
         byNameCN: (entries) => Object.keys(entries).sort((b, a) => (entries[a].NameCN.localeCompare(entries[b].NameCN))),
@@ -24,17 +24,33 @@ const SortMethods = {
     }
 }
 
-const loadHaving = (storeKey) => {
-    const saved = localStorage.getItem(storeKey);
-    return (saved ? JSON.parse(saved) : {});
+const CheckFilterMethods = {
+    ifHave: (entry, have) => (have),
+    ifNotHave: (entry, have) => (!have),
+    ifMaxed: (entry, have) => {
+        if (have) {
+            if (entry.Spiral) {
+                return have.lv === 100 && have.mc === 70;
+            } else {
+                return have.lv === 80 && have.mc === 50;
+            }
+        } else {
+            return false;
+        }
+    }
 }
 
-const saveHaving = (storeKey, having) => {
-    localStorage.setItem(storeKey, JSON.stringify(having));
+const loadLocalObj = (storeKey, init) => {
+    const saved = localStorage.getItem(storeKey);
+    return (saved ? JSON.parse(saved) : init || {});
+}
+
+const saveLocalObj = (storeKey, obj) => {
+    localStorage.setItem(storeKey, JSON.stringify(obj));
 }
 
 function Listing(props) {
-    const { locale, entries, storeKey, ControlComponent, ItemComponent } = props;
+    const { locale, entries, availabilities, storeKey, minRarity, maxRarity, sortOptions, radioFilters, ControlComponent, ItemComponent } = props;
 
     const [sort, setSort] = useState('byElement');
     const handleSort = (e) => {
@@ -57,46 +73,91 @@ function Listing(props) {
         }
     }
 
-    const [having, setHaving] = useState(loadHaving(storeKey));
+    const [having, setHaving] = useState(loadLocalObj(storeKey));
     const updateHaving = (id, changes) => {
         const newHaving = {
             ...having,
             [id]: { ...having[id], ...changes }
         };
         setHaving(newHaving);
-        saveHaving(storeKey, newHaving);
+        saveLocalObj(storeKey, newHaving);
     }
     const deleteHaving = (id) => {
-        const newHaving = {
-            ...having
-        }
+        const newHaving = { ...having };
         delete newHaving[id];
         setHaving(newHaving);
-        saveHaving(storeKey, newHaving);
-    }
-    const toggleAllHaving = () => {
-        let newHaving = {};
-        if (Object.keys(having).length === 0) {
-            Object.keys(entries).forEach(id => {
-                newHaving[id] = DEFAULT_HAVE[entries[id].Rarity];
-            });
-        }
-        setHaving(newHaving);
-        saveHaving(storeKey, newHaving);
+        saveLocalObj(storeKey, newHaving);
     }
 
+    const storeFilterKey = `${storeKey}-filters`;
+    const [filters, setFilters] = useState(loadLocalObj(storeFilterKey));
+    const addFilter = (filterType, target) => {
+        let newFilters = { ...filters };
+        if (CheckFilterMethods[filterType]) {
+            newFilters[filterType] = true;
+        } else if (radioFilters.includes(filterType)) {
+            newFilters[filterType] = parseInt(target);
+        } else if (filterType === 'Availability') {
+            newFilters.Availability = target;
+        }
+        setFilters(newFilters);
+        saveLocalObj(storeFilterKey, newFilters);
+    }
+    const removeFilter = (filterType) => {
+        const newFilters = { ...filters };
+        delete newFilters[filterType];
+        setFilters(newFilters);
+        saveLocalObj(storeFilterKey, newFilters);
+    }
+    const checkFilter = (id) => {
+        const entry = entries[id];
+        const have = having[id];
+        for (const f of Object.keys(filters)) {
+            if (CheckFilterMethods[f] && !CheckFilterMethods[f](entry, have)) {
+                return false;
+            } else if (radioFilters.includes(f) && entry[f] !== filters[f]) {
+                return false;
+            } else if (f === 'Availability' && (!entry.Availability || entry.Availability.every((a) => (!(filters.Availability.includes(a)))))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const visibleEntries = sorted(entries).filter(checkFilter);
+    const majorityHaving = having && Object.keys(having).length > 0 && visibleEntries.reduce((res, id) => (res + (having[id] ? 1 : 0)), 0) > (visibleEntries.length / 2 >> 0)
+    const toggleAllHaving = () => {
+        let newHaving = {};
+        if (!majorityHaving) {
+            for (const id of visibleEntries) {
+                newHaving[id] = DEFAULT_HAVE[entries[id].Rarity];
+            }
+        }
+        setHaving(newHaving);
+        saveLocalObj(storeKey, newHaving);
+    }
 
     return (
         <Fragment>
             <ControlComponent
+                locale={locale}
+                minRarity={minRarity}
+                maxRarity={maxRarity}
                 sort={sort}
                 handleSort={handleSort}
+                sortOptions={sortOptions}
                 order={order}
                 toggleOrder={toggleOrder}
+                majorityHaving={majorityHaving}
                 toggleAllHaving={toggleAllHaving}
+                addFilter={addFilter}
+                removeFilter={removeFilter}
+                filters={filters}
+                radioFilters={radioFilters}
+                availabilities={availabilities}
             />
             <Grid container spacing={1} alignItems="flex-start" justify="flex-start" style={{ marginTop: 10 }}>
-                {sorted(entries).map((id) =>
+                {visibleEntries.map((id) => (
                     <ItemComponent
                         key={id}
                         locale={locale}
@@ -106,7 +167,7 @@ function Listing(props) {
                         updateHaving={updateHaving}
                         deleteHaving={deleteHaving}
                     />
-                )}
+                ))}
             </Grid>
         </Fragment>
     );

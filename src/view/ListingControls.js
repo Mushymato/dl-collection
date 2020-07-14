@@ -166,7 +166,7 @@ function ListingControls(props) {
                             {availabilities.map((av) => (
                                 <FormControlLabel key={av}
                                     control={<Checkbox onChange={handleAvail.bind(this)} name={av} checked={Boolean(filters.Availability && filters.Availability.includes(av))} color="primary" />}
-                                    label={av} />
+                                    label={TextLabel[locale][av] || av} />
                             ))}
                         </FormGroup>
                     </Popover>

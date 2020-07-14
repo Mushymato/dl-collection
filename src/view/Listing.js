@@ -127,10 +127,14 @@ function Listing(props) {
     const visibleEntries = sorted(entries).filter(checkFilter);
     const majorityHaving = having && Object.keys(having).length > 0 && visibleEntries.reduce((res, id) => (res + (having[id] ? 1 : 0)), 0) > (visibleEntries.length / 2 >> 0)
     const toggleAllHaving = () => {
-        let newHaving = {};
+        let newHaving = { ...having };
         if (!majorityHaving) {
             for (const id of visibleEntries) {
-                newHaving[id] = DEFAULT_HAVE[storeKey][entries[id].Rarity];
+                newHaving[id] = having[id] || DEFAULT_HAVE[storeKey][entries[id].Rarity];
+            }
+        } else {
+            for (const id of visibleEntries) {
+                delete newHaving[id];
             }
         }
         setHaving(newHaving);

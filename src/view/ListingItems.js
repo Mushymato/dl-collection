@@ -14,6 +14,7 @@ import Box from '@material-ui/core/Box';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
+import TextLabel from '../data/locale.json';
 import { ELEMENTS, ELEMENT_COLORS, DEFAULT_HAVE } from '../data/Mapping';
 
 const useStyles = makeStyles({
@@ -132,7 +133,7 @@ const insertLinebreak = (name, locale) => {
 }
 
 function BaseListingItem(props) {
-    const { locale, entry, have, lcHaving, rcHaving, editing, toggleEditing, cardIconUrl, CardIconDeco, CardEditFields } = props;
+    const { locale, entry, have, lcHaving, rcHaving, editing, toggleEditing, cardIconUrl, CardIconDeco, children } = props;
     const classes = useStyles();
     const cardName = entry[`Name${locale}`];
     return (
@@ -157,7 +158,7 @@ function BaseListingItem(props) {
                     </Button>
                 </CardContent>
                 <CardActions className={clsx(classes.cardEdit, editing && classes.cardEditEditing)} >
-                    <CardEditFields />
+                    {children}
                 </CardActions>
             </Card>
         </Grid>
@@ -238,13 +239,6 @@ export function CharaListingItem(props) {
         </React.Fragment>
     );
 
-    const CardEditFields = () => (
-        <React.Fragment>
-            <TextField label="Lv" value={lv} onInput={validateLv.bind(this)} />
-            <TextField label="MC" value={mc} onInput={validateMc.bind(this)} />
-        </React.Fragment>
-    );
-
     return (<BaseListingItem
         locale={locale}
         entry={entry}
@@ -254,8 +248,10 @@ export function CharaListingItem(props) {
         editing={editing}
         toggleEditing={toggleEditing}
         cardIconUrl={`${process.env.PUBLIC_URL}/chara/${id}_r0${rarity}.png`}
-        CardIconDeco={CardIconDeco}
-        CardEditFields={CardEditFields} />)
+        CardIconDeco={CardIconDeco}>
+        <TextField label="Lv" value={lv} onInput={validateLv.bind(this)} />
+        <TextField label="MC" value={mc} onInput={validateMc.bind(this)} />
+    </BaseListingItem>)
 }
 
 export function standardCardIcon(category, id, count) {
@@ -280,6 +276,7 @@ export function UnbindableListingItem(props) {
         const nextC = parseInt(e.target.value);
         if (isNaN(nextC) || nextC <= 0) { deleteHaving(id); }
         else { updateHaving(id, { c: nextC }); }
+        e.target.focus();
     }
 
     const lcHaving = (e) => {
@@ -311,12 +308,6 @@ export function UnbindableListingItem(props) {
         );
     };
 
-    const CardEditFields = () => (
-        <React.Fragment>
-            <TextField label="Count" value={count} onInput={validateCount.bind(this)} />
-        </React.Fragment>
-    );
-
     return (<BaseListingItem
         locale={locale}
         entry={entry}
@@ -326,6 +317,7 @@ export function UnbindableListingItem(props) {
         editing={editing}
         toggleEditing={toggleEditing}
         cardIconUrl={cardIconFn(category, id, count)}
-        CardIconDeco={CardIconDeco}
-        CardEditFields={CardEditFields} />)
+        CardIconDeco={CardIconDeco}>
+        <TextField id={`count-${id}`} label={TextLabel[locale].COUNT} value={count} onInput={validateCount} />
+    </BaseListingItem>)
 }

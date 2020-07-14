@@ -30,14 +30,10 @@ const CheckFilterMethods = {
     ifNotHave: (entry, have) => (!have),
     ifMaxed: (entry, have) => {
         if (have) {
-            if (entry.Spiral) {
-                return have.lv === 100 && have.mc === 70;
-            } else {
-                return have.lv === 80 && have.mc === 50;
-            }
-        } else {
-            return false;
+            if (entry.Spiral === undefined) { return have.c >= 5; }
+            else { return entry.Spiral ? (have.lv === 100 && have.mc === 70) : have.lv === 80 && have.mc === 50; }
         }
+        return false;
     }
 }
 
@@ -51,12 +47,12 @@ const saveLocalObj = (storeKey, obj) => {
 }
 
 function Listing(props) {
-    const { locale, entries, availabilities, storeKey, cardIconFn, minRarity, maxRarity, sortOptions, radioFilters, ItemComponent } = props;
+    const { locale, entries, availabilities, storeKey, cardIconFn, minRarity, maxRarity, sortDefault, sortOptions, radioFilters, ItemComponent } = props;
 
     const fullStoreKey = `dl-collection-${storeKey}`;
 
     const storeSortKey = `${fullStoreKey}-sorting`;
-    const [sort, setSort] = useState(localStorage.getItem(storeSortKey) || 'byID');
+    const [sort, setSort] = useState(localStorage.getItem(storeSortKey) || sortDefault || 'byElement');
     const handleSort = (e) => {
         setSort(e.target.value);
         localStorage.setItem(storeSortKey, e.target.value);

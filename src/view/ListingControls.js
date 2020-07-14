@@ -121,7 +121,7 @@ function ListingControls(props) {
                         checkedIcon={<SelectAllIcon fontSize="large" />}
                     />
                     <FormControl className={classes.sortSelect}>
-                        <InputLabel>Sort by</InputLabel>
+                        <InputLabel>{TextLabel[locale].SORT_BY}</InputLabel>
                         <Select
                             value={sort}
                             onChange={handleSort}
@@ -154,7 +154,7 @@ function ListingControls(props) {
                         </FormControl>
                     </Grid>))}
                 <Grid item xs>
-                    <Button onClick={handleClick} variant="outlined" className={classes.availButton}>Availability</Button>
+                    <Button onClick={handleClick} variant="outlined" className={classes.availButton}>{TextLabel[locale].AVAILABILITY}</Button>
                     <Popover
                         open={open}
                         anchorEl={anchorEl}

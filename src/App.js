@@ -134,7 +134,7 @@ function App() {
           storeKey={'weapon'}
           minRarity={2}
           maxRarity={6}
-          sortOptions={['byID', 'byName', 'byElement', 'byRarity']}
+          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity']}
           radioFilters={['Element', 'Rarity']}
           ItemComponent={UnbindableListingItem}
         />
@@ -148,6 +148,7 @@ function App() {
           cardIconFn={amuletCardIcon}
           minRarity={2}
           maxRarity={5}
+          sortDefault={'byID'}
           sortOptions={['byID', 'byName', 'byRarity']}
           radioFilters={['Rarity']}
           ItemComponent={UnbindableListingItem}

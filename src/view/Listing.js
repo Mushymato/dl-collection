@@ -2,8 +2,9 @@ import React, { Fragment, useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 
-import { DEFAULT_HAVE } from '../data/Mapping';
 import ListingControls from './ListingControls';
+import { DEFAULT_HAVE } from '../data/Mapping';
+import TextLabel from '../data/locale.json';
 
 const SortMethods = {
     ASC: {
@@ -145,7 +146,7 @@ function Listing(props) {
 
     const statLabel = (title) => {
         const p = ((100 * visibleHave / visibleEntries.length) >> 0)
-        return `${title} ${visibleHave} / ${visibleEntries.length} (${p}%)`
+        return `${title}: ${visibleHave} / ${visibleEntries.length} (${p}%)`
     }
 
     return (
@@ -167,7 +168,7 @@ function Listing(props) {
                 radioFilters={radioFilters}
                 availabilities={availabilities}
             />
-            <Typography component="h2" gutterBottom>{statLabel('Completion: ')}</Typography>
+            <Typography component="h2" gutterBottom>{statLabel(TextLabel[locale].COMPLETION)}</Typography>
             <Grid container spacing={1} alignItems="flex-start" justify="flex-start">
                 {visibleEntries.map((id) => (
                     <ItemComponent

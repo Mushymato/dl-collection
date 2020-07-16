@@ -22,7 +22,7 @@ import Availabilities from './data/availabilities.json';
 
 const theme = createMuiTheme({
   typography: {
-    fontFamily: '"Open Sans Condensed", "Noto Sans SC", sans-serif ',
+    fontFamily: '"Open Sans", "Noto Sans SC", sans-serif ',
   }
 });
 

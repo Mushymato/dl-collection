@@ -113,7 +113,7 @@ function ListingControls(props) {
     return (
         <AppBar position="static" color="default" className={classes.root}>
             <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">
-                <Grid item sm={2}>
+                <Grid item>
                     <Checkbox
                         checked={majorityHaving}
                         onChange={toggleAllHaving} color="primary"

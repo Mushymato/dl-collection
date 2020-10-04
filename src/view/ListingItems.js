@@ -122,7 +122,7 @@ const useStyles = makeStyles({
     Null: { backgroundColor: ELEMENT_COLORS.Null }
 });
 
-const insertLinebreak = (name, locale) => {
+export const insertLinebreak = (name, locale) => {
     switch (locale) {
         case 'JP':
         case 'CN':

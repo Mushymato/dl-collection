@@ -7,7 +7,7 @@ export const WEAPONS = {
     5: 'Lance',
     6: 'Bow',
     7: 'Wand',
-    8: 'staff'
+    8: 'Staff'
 }
 
 export const ELEMENTS = {
@@ -38,6 +38,14 @@ export const ELEMENT_COLORS = {
     Shadow: 'rgb(230, 153, 255)'
 }
 
+export const BUILDUP_TYPE = {
+    1: 'Unbind',
+    2: 'Refinement',
+    3: 'Slots',
+    5: 'Bonus',
+    6: 'Copies'
+}
+
 export const DEFAULT_HAVE = {
     chara: {
         3: { lv: 60, mc: 30 },
@@ -48,13 +56,6 @@ export const DEFAULT_HAVE = {
         3: { c: 5 },
         4: { c: 5 },
         5: { c: 1 }
-    },
-    weapon: {
-        2: { c: 5 },
-        3: { c: 5 },
-        4: { c: 5 },
-        5: { c: 5 },
-        6: { c: 5 },
     },
     amulet: {
         2: { c: 5 },

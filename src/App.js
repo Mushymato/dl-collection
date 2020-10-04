@@ -12,6 +12,7 @@ import Tab from '@material-ui/core/Tab';
 
 import Listing from './view/Listing';
 import { CharaListingItem, UnbindableListingItem, amuletCardIcon } from './view/ListingItems';
+import { WeaponListingItem } from './view/ListingItemWeapon';
 
 import TextLabel from './data/locale.json';
 import Chara from './data/chara.json';
@@ -19,6 +20,7 @@ import Dragon from './data/dragon.json';
 import Weapon from './data/weapon.json';
 import Amulet from './data/amulet.json';
 import Availabilities from './data/availabilities.json';
+import WeaponSeries from './data/weaponseries.json';
 
 const theme = createMuiTheme({
   typography: {
@@ -95,8 +97,8 @@ function App() {
           >
             <Tab label={TextLabel[locale].ADVENTURERS} {...a11yProps(0)} />
             <Tab label={TextLabel[locale].DRAGONS} {...a11yProps(1)} />
-            <Tab label={TextLabel[locale].WEAPONS} {...a11yProps(2)} />
-            <Tab label={TextLabel[locale].AMULETS} {...a11yProps(3)} />
+            <Tab label={TextLabel[locale].AMULETS} {...a11yProps(2)} />
+            <Tab label={TextLabel[locale].WEAPONS} {...a11yProps(3)} />
           </Tabs>
         </Toolbar>
       </AppBar>
@@ -129,19 +131,6 @@ function App() {
       <TabPanel value={idx} index={2} dir={direction}>
         <Listing
           locale={locale}
-          entries={Weapon}
-          availabilities={Availabilities.Weapon}
-          storeKey={'weapon'}
-          minRarity={2}
-          maxRarity={6}
-          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity']}
-          radioFilters={['Element', 'Rarity']}
-          ItemComponent={UnbindableListingItem}
-        />
-      </TabPanel>
-      <TabPanel value={idx} index={3} dir={direction}>
-        <Listing
-          locale={locale}
           entries={Amulet}
           availabilities={Availabilities.Amulet}
           storeKey={'amulet'}
@@ -152,6 +141,19 @@ function App() {
           sortOptions={['byID', 'byName', 'byRarity']}
           radioFilters={['Rarity']}
           ItemComponent={UnbindableListingItem}
+        />
+      </TabPanel>
+      <TabPanel value={idx} index={3} dir={direction}>
+        <Listing
+          locale={locale}
+          entries={Weapon}
+          availabilities={Object.keys(WeaponSeries).map((i) => WeaponSeries[i][`Name${locale}`])}
+          storeKey={'weapon'}
+          minRarity={2}
+          maxRarity={6}
+          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity']}
+          radioFilters={['Element', 'Rarity']}
+          ItemComponent={WeaponListingItem}
         />
       </TabPanel>
     </ThemeProvider>

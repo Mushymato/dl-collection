@@ -11,8 +11,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
 import Listing from './view/Listing';
-import { CharaListingItem, UnbindableListingItem, amuletCardIcon } from './view/ListingItems';
-import { WeaponListingItem } from './view/ListingItemWeapon';
+import { CharaListingItem, UnbindableListingItem, WeaponListingItem, amuletCardIcon } from './view/ListingItems';
 
 import TextLabel from './data/locale.json';
 import Chara from './data/chara.json';
@@ -147,11 +146,12 @@ function App() {
         <Listing
           locale={locale}
           entries={Weapon}
-          availabilities={Object.keys(WeaponSeries).map((i) => WeaponSeries[i][`Name${locale}`])}
+          // availabilities={Object.keys(WeaponSeries).map((i) => WeaponSeries[i][`Name${locale}`])}
+          series={WeaponSeries}
           storeKey={'weapon'}
           minRarity={2}
           maxRarity={6}
-          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity']}
+          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity', 'bySeries']}
           radioFilters={['Element', 'Rarity']}
           ItemComponent={WeaponListingItem}
         />

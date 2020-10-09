@@ -16,13 +16,20 @@ import Checkbox from '@material-ui/core/Checkbox';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import Popover from '@material-ui/core/Popover';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import Typography from '@material-ui/core/Typography';
 
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
 
 import TextLabel from '../data/locale.json';
+import Weapon from '../data/weapon.json';
+import WeaponBuild from '../data/weaponbuild.json';
+import Material from '../data/material.json';
 import { ELEMENTS, WEAPONS, RARITIES } from '../data/Mapping';
+import { doneWeaponHave, MaterialSummaryItem } from './ListingItems';
 
 const useStyles = makeStyles({
     root: {
@@ -61,8 +68,88 @@ const useStyles = makeStyles({
         paddingTop: 5,
         paddingLeft: 10,
         paddingRight: 10
+    },
+    costTitle: {
+        height: '6em'
     }
 });
+
+
+function WeaponMaterialSummation(props) {
+    const { locale, having } = props;
+    const classes = useStyles();
+
+    const [open, setOpen] = React.useState(false);
+
+    const toggleOpen = (open) => (event) => {
+        if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
+        setOpen(open);
+    };
+
+    let totalCost = 0;
+    const totalMats = {};
+    // maybe come bacc and count up passive ability mats too :v
+    for (let id of Object.keys(Weapon)) {
+        const wpn = Weapon[id];
+        const currHave = having[id];
+        const doneHave = doneWeaponHave(wpn);
+        const bld = WeaponBuild[wpn.Build];
+        if (currHave) {
+            for (let bi of Object.keys(doneHave.b)) {
+                if (bi === '6' || doneHave.b[bi] <= currHave.b[bi]) { continue; }
+                for (const bs of bld[bi].slice(currHave.b[bi] ? currHave.b[bi] - 1 : 0, doneHave.b[bi])) {
+                    totalCost += bs.Cost;
+                    for (let m of Object.keys(bs.Mats)) {
+                        if (!totalMats[m]) { totalMats[m] = 0; }
+                        totalMats[m] += bs.Mats[m];
+                    }
+                }
+            }
+        } else {
+            totalCost += wpn.Cost;
+            for (let m of Object.keys(wpn.Mats)) {
+                if (!totalMats[m]) { totalMats[m] = 0; }
+                totalMats[m] += wpn.Mats[m];
+            }
+            for (let bi of Object.keys(doneHave.b)) {
+                if (bi === '6') { continue; }
+                for (const bs of bld[bi].slice(0, doneHave.b[bi])) {
+                    for (let m of Object.keys(bs.Mats)) {
+                        console.log(m, bs.Mats[m]);
+                        if (!totalMats[m]) { totalMats[m] = 0; }
+                        totalMats[m] += bs.Mats[m];
+                    }
+                }
+            }
+        }
+    }
+
+    return (
+        <Grid item>
+            <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
+            <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
+                <DialogContent className={clsx(classes.costTitle)}>
+                    <img style={{ verticalAlign: 'middle' }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
+                    <Typography display="inline" gutterBottom>   {totalCost}</Typography>
+                </DialogContent>
+                <DialogContent dividers>
+                    <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">
+                        {Object.keys(totalMats).map((m) => (
+                            <MaterialSummaryItem
+                                key={m}
+                                m={m}
+                                count={totalMats[m]}
+                                name={Material[m][`Name${locale}`]}
+                            />
+                        ))}
+                    </Grid>
+                </DialogContent>
+            </Dialog>
+        </Grid>
+    )
+}
 
 function ListingControls(props) {
     const {
@@ -71,7 +158,7 @@ function ListingControls(props) {
         order, toggleOrder,
         majorityHaving, toggleAllHaving,
         addFilter, removeFilter, filters, radioFilters,
-        availabilities
+        availabilities, series, having
     } = props;
     const classes = useStyles();
 
@@ -101,14 +188,24 @@ function ListingControls(props) {
         if (e.target.checked) { nextAvail.push(e.target.name); }
         else {
             const index = nextAvail.indexOf(e.target.name);
-            console.log(index);
             if (index >= 0) { nextAvail.splice(index, 1); }
         }
         if (nextAvail.length === 0) { removeFilter('Availability'); }
         else { addFilter('Availability', nextAvail); }
     }
+    const handleSeries = (e) => {
+        let nextSeries = filters.Series || [];
+        if (e.target.checked) { nextSeries.push(e.target.name); }
+        else {
+            const index = nextSeries.indexOf(e.target.name);
+            if (index >= 0) { nextSeries.splice(index, 1); }
+        }
+        if (nextSeries.length === 0) { removeFilter('Series'); }
+        else { addFilter('Series', nextSeries); }
+    }
 
     const clearAvail = (e) => { removeFilter('Availability'); }
+    const clearSeries = (e) => { removeFilter('Series'); }
 
     return (
         <AppBar position="static" color="default" className={classes.root}>
@@ -153,24 +250,47 @@ function ListingControls(props) {
                             </RadioGroup>
                         </FormControl>
                     </Grid>))}
-                <Grid item xs>
-                    <Button onClick={handleClick} variant="outlined" className={classes.availButton}>{TextLabel[locale].AVAILABILITY}</Button>
-                    <Popover
-                        open={open}
-                        anchorEl={anchorEl}
-                        onClose={handleClose}
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'center', }}
-                        transformOrigin={{ vertical: 'top', horizontal: 'center', }}>
-                        <FormGroup className={classes.availChecks}>
-                            <Button onClick={clearAvail}>Clear</Button>
-                            {availabilities.map((av) => (
-                                <FormControlLabel key={av}
-                                    control={<Checkbox onChange={handleAvail.bind(this)} name={av} checked={Boolean(filters.Availability && filters.Availability.includes(av))} color="primary" />}
-                                    label={TextLabel[locale][av] || av} />
-                            ))}
-                        </FormGroup>
-                    </Popover>
-                </Grid>
+                {availabilities && (
+                    <Grid item>
+                        <Button onClick={handleClick} variant="outlined" className={classes.availButton}>{TextLabel[locale].AVAILABILITY}</Button>
+                        <Popover
+                            open={open}
+                            anchorEl={anchorEl}
+                            onClose={handleClose}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'center', }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'center', }}>
+                            <FormGroup className={classes.availChecks}>
+                                <Button onClick={clearAvail}>Clear</Button>
+                                {availabilities.map((av) => (
+                                    <FormControlLabel key={av}
+                                        control={<Checkbox onChange={handleAvail.bind(this)} name={av} checked={Boolean(filters.Availability && filters.Availability.includes(av))} color="primary" />}
+                                        label={TextLabel[locale][av] || av} />
+                                ))}
+                            </FormGroup>
+                        </Popover>
+                    </Grid>
+                )}
+                {series && (
+                    <Grid item>
+                        <Button onClick={handleClick} variant="outlined" className={classes.availButton}>{TextLabel[locale].SERIES}</Button>
+                        <Popover
+                            open={open}
+                            anchorEl={anchorEl}
+                            onClose={handleClose}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'center', }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'center', }}>
+                            <FormGroup className={classes.availChecks}>
+                                <Button onClick={clearSeries}>Clear</Button>
+                                {Object.keys(series).map((sr) => (
+                                    <FormControlLabel key={sr}
+                                        control={<Checkbox onChange={handleSeries.bind(this)} name={sr} checked={Boolean(filters.Series && filters.Series.includes(sr))} color="primary" />}
+                                        label={series[sr][`Name${locale}`]} />
+                                ))}
+                            </FormGroup>
+                        </Popover>
+                    </Grid>
+                )}
+                {having && (<WeaponMaterialSummation locale={locale} having={having} />)}
             </Grid>
         </AppBar >
     )

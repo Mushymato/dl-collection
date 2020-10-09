@@ -10,12 +10,24 @@ import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Box from '@material-ui/core/Box';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import Slider from '@material-ui/core/Slider';
+import Typography from '@material-ui/core/Typography';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import AddIcon from '@material-ui/icons/Add';
 
 import TextLabel from '../data/locale.json';
-import { ELEMENTS, ELEMENT_COLORS, DEFAULT_HAVE } from '../data/Mapping';
+import Weapon from '../data/weapon.json';
+import WeaponSeries from '../data/weaponseries.json';
+import WeaponBuild from '../data/weaponbuild.json';
+import { ELEMENTS, ELEMENT_BG_COLORS, ELEMENT_FG_COLORS, DEFAULT_HAVE } from '../data/Mapping';
 
 const useStyles = makeStyles({
     root: {
@@ -32,8 +44,14 @@ const useStyles = makeStyles({
         height: 72,
         width: 72
     },
+    cardCountIcon: {
+        transition: 'width 0.1s linear 0.1s, height 0.1s linear 0.1s',
+        margin: 'auto',
+        height: 90,
+        width: 90
+    },
     cardName: {
-        padding: 0,
+        padding: '0 !important',
         height: '2.5em'
     },
     cardNameText: {
@@ -49,6 +67,16 @@ const useStyles = makeStyles({
             margin: 0,
             padding: 0
         }
+    },
+    cardCount: {
+        padding: '0 !important',
+        height: '1em',
+        marginBottom: 8,
+    },
+    cardCountText: {
+        fontWeight: 700,
+        fontSize: '0.75em',
+        letterSpacing: -1,
     },
     cardNameNoWrap: {
         whiteSpace: 'pre'
@@ -113,13 +141,37 @@ const useStyles = makeStyles({
     ubM: {
         backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ubm.png")`,
     },
-
-    Flame: { backgroundColor: ELEMENT_COLORS.Flame },
-    Water: { backgroundColor: ELEMENT_COLORS.Water },
-    Wind: { backgroundColor: ELEMENT_COLORS.Wind },
-    Light: { backgroundColor: ELEMENT_COLORS.Light },
-    Shadow: { backgroundColor: ELEMENT_COLORS.Shadow },
-    Null: { backgroundColor: ELEMENT_COLORS.Null }
+    dialogIcon: {
+        width: 60,
+        height: 60
+    },
+    abilityCheckTooltip: {
+        top: '10px !important',
+        padding: 0,
+        fontSize: '1.2em'
+    },
+    abilityCheck: {
+        padding: 0
+    },
+    abilityIcon: {
+        width: 60,
+        height: 60
+    },
+    grayscale: {
+        filter: 'grayscale(100%)'
+    },
+    Flame: { backgroundColor: ELEMENT_BG_COLORS.Flame },
+    Water: { backgroundColor: ELEMENT_BG_COLORS.Water },
+    Wind: { backgroundColor: ELEMENT_BG_COLORS.Wind },
+    Light: { backgroundColor: ELEMENT_BG_COLORS.Light },
+    Shadow: { backgroundColor: ELEMENT_BG_COLORS.Shadow },
+    Null: { backgroundColor: ELEMENT_BG_COLORS.Null },
+    FgFlame: { color: ELEMENT_FG_COLORS.Flame },
+    FgWater: { color: ELEMENT_FG_COLORS.Water },
+    FgWind: { color: ELEMENT_FG_COLORS.Wind },
+    FgLight: { color: ELEMENT_FG_COLORS.Light },
+    FgShadow: { color: ELEMENT_FG_COLORS.Shadow },
+    FgNull: { color: ELEMENT_FG_COLORS.Null },
 });
 
 export const insertLinebreak = (name, locale) => {
@@ -319,4 +371,264 @@ export function UnbindableListingItem(props) {
         CardIconDeco={CardIconDeco}>
         <TextField id={`count-${id}`} label={TextLabel[locale].COUNT} value={count} onInput={validateCount} />
     </BaseListingItem>)
+}
+
+const fullWeaponHave = (entry) => {
+    const build = WeaponBuild[entry.Build];
+    const have = {};
+    if (build) {
+        have.b = {};
+        for (let i of Object.keys(build)) {
+            have.b[i] = build[i].length;
+        }
+        have.b[6] += 1;
+    }
+    if (entry.Passive) {
+        have.p = {};
+        for (let i of Object.keys(entry.Passive)) {
+            have.p[i] = true;
+        }
+    }
+    return have;
+}
+
+export const doneWeaponHave = (entry) => {
+    const build = WeaponBuild[entry.Build];
+    if (build[5]) {
+        const unbindReq = Math.max(build[5].map((b) => b.UnbindReq));
+        const have = {
+            b: {
+                1: unbindReq,
+                5: build[5].length,
+                6: 1
+            }
+        }
+        if (entry.Series === 4 && build[3]) {
+            have.b[3] = build[3].length;
+        }
+        if (build[2]) {
+            have.b[2] = Math.floor(unbindReq / 4);
+        }
+        return have;
+    } else {
+        return { b: { 6: 1 } };
+    }
+}
+
+const prereqWeaponHaves = (tempHaving, prereq, prereqHaves) => {
+    prereqHaves = prereqHaves || {};
+    for (let i of prereq.Create) {
+        if (!tempHaving[i]) {
+            prereqHaves[i] = { b: { 6: 1 } };
+        }
+        prereqHaves = prereqWeaponHaves(tempHaving, Weapon[i].Prereq, prereqHaves);
+    }
+    if (prereq.FullUp) {
+        prereqHaves[prereq.FullUp] = fullWeaponHave(Weapon[prereq.FullUp]);
+        prereqHaves = prereqWeaponHaves(tempHaving, Weapon[prereq.FullUp].Prereq, prereqHaves);
+    }
+    return prereqHaves;
+}
+
+export function WeaponListingItem(props) {
+    const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
+    const classes = useStyles();
+    const cardName = entry[`Name${locale}`];
+    const cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Skins["0"]}.png`;
+
+    const [open, setOpen] = React.useState(false);
+    const handleOpen = () => { setOpen(true); };
+    const handleClose = () => { setOpen(false); };
+
+    const build = WeaponBuild[entry.Build];
+
+    const createThisHaving = (newHave) => {
+        let tempHaving = updateHaving(id, newHave || doneWeaponHave(entry));
+        const prereqs = prereqWeaponHaves(tempHaving, entry.Prereq);
+        for (let i of Object.keys(prereqs)) {
+            tempHaving = updateHaving(i, prereqs[i], tempHaving);
+        }
+    }
+    const lcHaving = (e) => {
+        createThisHaving();
+    }
+    const deleteThisHaving = () => {
+        if (have) {
+            let tempHaving = deleteHaving(id);
+            for (let i of Object.keys(tempHaving)) {
+                const prereqs = prereqWeaponHaves({}, Weapon[i].Prereq);
+                if (prereqs[id]) {
+                    tempHaving = deleteHaving(i, tempHaving);
+                }
+            }
+        }
+    }
+    const rcHaving = (e) => {
+        deleteThisHaving();
+        e.preventDefault();
+    }
+    const handleDialogCheck = (e) => {
+        if (e.target.checked) {
+            createThisHaving();
+        } else {
+            deleteThisHaving();
+        }
+    }
+    const setBuildValues = (piece, value, have) => {
+        have.b[piece] = value;
+        if (piece === '1') {
+            have.b[5] = Math.min(have.b[5] || 0, build[5].reduce((acc, cur, idx) => {
+                return cur.UnbindReq > value ? acc : (idx + 1);
+            }, 0));
+        } else if (piece === '2') {
+            have.b[1] = Math.min(have.b[1] || 0, (value + 1) * 4);
+        } else {
+            const unbindReq = build[piece][value - 1] ? build[piece][value - 1].UnbindReq : 0;
+            have.b[1] = Math.max(have.b[1] || 0, unbindReq);
+        }
+        if (build[2] && piece !== '2') {
+            have.b[2] = Math.max(have.b[2] || 0, Math.floor(have.b[1] / 4));
+        }
+        if (have.p) {
+            for (let p of Object.keys(have.p)) {
+                if (entry.Passive[p].UnbindReq > have.b[1]) {
+                    have.p[p] = false;
+                }
+            }
+        }
+        return have;
+    }
+    const makeBuildChange = (piece) => {
+        return (e, value) => {
+            if (have) {
+                if (piece === '6' && value === 0) {
+                    deleteThisHaving();
+                } else {
+                    updateHaving(id, setBuildValues(piece, value, have));
+                }
+            } else {
+                const newHave = doneWeaponHave(entry);
+                createThisHaving(setBuildValues(piece, value, newHave));
+            }
+        }
+    }
+    const setAbilityValues = (p, checked, have) => {
+        if (!have.p) {
+            have.p = {}
+        }
+        have.p[p] = checked;
+        if (checked) {
+            have.b[1] = Math.max(have.b[1] || 0, entry.Passive[p].UnbindReq);
+        }
+        return have;
+    }
+    const handleAbilityCheck = (e) => {
+        const p = e.target.name.slice(-1);
+        const checked = e.target.checked;
+        if (have) {
+            updateHaving(id, setAbilityValues(p, checked, have));
+        } else {
+            const newHave = doneWeaponHave(entry);
+            createThisHaving(setAbilityValues(p, checked, newHave));
+        }
+    }
+
+    return (<Grid item>
+        <Card className={clsx(classes.root, have && (classes[ELEMENTS[entry.Element]] || classes.Null))}>
+            <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
+                <CardMedia
+                    className={clsx(classes.cardIcon)}
+                    image={cardIconUrl}
+                    title={cardName} alt={cardName} >
+                </CardMedia>
+            </CardActionArea>
+            <CardContent className={clsx(classes.cardName)}>
+                <Button
+                    className={clsx(classes.cardNameText, locale !== 'EN' && classes.cardNameNoWrap)}
+                    size="small"
+                    onClick={handleOpen}
+                    endIcon={<AddIcon />}>
+                    {insertLinebreak(cardName, locale)}
+                </Button>
+            </CardContent>
+        </Card>
+        <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
+            <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+                <FormControlLabel
+                    control={<Checkbox name={`${id}-create`}
+                        checked={!!(have)}
+                        onClick={handleDialogCheck}
+                        color="default"
+                        icon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon, classes.grayscale)} />}
+                        checkedIcon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon)} />} />}
+                    label={<Box><Typography variant="overline" display="block">{WeaponSeries[entry.Series][`Name${locale}`]}</Typography><Typography>{cardName}</Typography></Box>}
+                />
+            </DialogTitle>
+            {build && (<DialogContent dividers>
+                {Object.keys(build).map((piece) => {
+                    const buildInfo = build[piece];
+                    const buildpiece = TextLabel[locale][`BUILDUP_${piece}`];
+                    const buildvalue = (have && have.b) ? (have.b[piece] || 0) : 0
+                    return (
+                        <Box key={piece}>
+                            <Typography id="build-slider" gutterBottom>
+                                {buildpiece + ' - ' + buildvalue}
+                            </Typography>
+                            <Slider
+                                name={`${id}-build-${piece}`}
+                                aria-labelledby="build-slider"
+                                valueLabelDisplay="auto"
+                                value={buildvalue}
+                                onChange={makeBuildChange(piece)}
+                                step={1}
+                                marks
+                                min={0}
+                                max={piece === '6' ? 4 : buildInfo.length}
+                                classes={{ colorPrimary: classes[`Fg${ELEMENTS[entry.Element]}`] || classes.FgNull }}
+                            />
+                        </Box>
+                    )
+                })}
+            </DialogContent>)}
+            {entry.Passive && (< DialogContent dividers>
+                {Object.keys(entry.Passive).map((p) => {
+                    const passive = entry.Passive[p];
+                    const abilityName = passive.Ability[`Name${locale}`];
+                    const iconPath = `${process.env.PUBLIC_URL}/ability/${passive.Ability.Icon}.png`;
+                    return (
+                        <Tooltip key={p} title={abilityName} aria-label={abilityName} placement="top" classes={{ popper: clsx(classes.abilityCheckTooltip) }}>
+                            <Checkbox
+                                name={`${id}-passive-${p}`}
+                                onClick={handleAbilityCheck}
+                                color="default"
+                                classes={{ root: clsx(classes.abilityCheck) }}
+                                checked={!!(have && have.p && have.p[p])}
+                                icon={<img src={iconPath} alt={abilityName} className={clsx(classes.abilityIcon, classes.grayscale)} />}
+                                checkedIcon={<img src={iconPath} alt={abilityName} className={clsx(classes.abilityIcon)} />}
+                            />
+                        </Tooltip>
+                    )
+                })}
+            </DialogContent>)}
+        </Dialog>
+    </Grid >)
+}
+
+export function MaterialSummaryItem(props) {
+    const { m, count, name } = props;
+    const classes = useStyles();
+    return (
+        <Grid item>
+            <Card>
+                <CardMedia
+                    className={clsx(classes.cardCountIcon)}
+                    image={`${process.env.PUBLIC_URL}/material/${m}.png`}
+                    title={name} alt={name} >
+                </CardMedia>
+                <CardContent className={clsx(classes.cardCount)}>
+                    <Typography align="center" className={clsx(classes.cardCountText)} display="block">x {count}</Typography>
+                </CardContent>
+            </Card>
+        </Grid>
+    );
 }

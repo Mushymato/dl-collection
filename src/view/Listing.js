@@ -6,6 +6,15 @@ import ListingControls from './ListingControls';
 import { DEFAULT_HAVE } from '../data/Mapping';
 import TextLabel from '../data/locale.json';
 
+const weaponSeriesSortOrder = {
+    4: -6,
+    3: -5,
+    5: -4,
+    2: -3,
+    1: -2,
+    6: -1,
+}
+
 const SortMethods = {
     ASC: {
         byID: (entries) => (Object.keys(entries)),
@@ -15,6 +24,7 @@ const SortMethods = {
         byElement: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon || entries[b].Rarity - entries[a].Rarity)),
         byWeapon: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity)),
         byRarity: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
+        bySeries: (entries) => Object.keys(entries).sort((a, b) => (weaponSeriesSortOrder[entries[a].Series] - weaponSeriesSortOrder[entries[b].Series] || entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
     },
     DSC: {
         byID: (entries) => (Object.keys(entries).reverse()),
@@ -24,6 +34,7 @@ const SortMethods = {
         byElement: (entries) => Object.keys(entries).sort((b, a) => (entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon || entries[b].Rarity - entries[a].Rarity)),
         byWeapon: (entries) => Object.keys(entries).sort((b, a) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity)),
         byRarity: (entries) => Object.keys(entries).sort((b, a) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
+        bySeries: (entries) => Object.keys(entries).sort((b, a) => (weaponSeriesSortOrder[entries[a].Series] - weaponSeriesSortOrder[entries[b].Series] || entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
     }
 }
 
@@ -49,7 +60,11 @@ const saveLocalObj = (storeKey, obj) => {
 }
 
 function Listing(props) {
-    const { locale, entries, availabilities, storeKey, cardIconFn, minRarity, maxRarity, sortDefault, sortOptions, radioFilters, ItemComponent } = props;
+    const {
+        locale, entries, availabilities, series,
+        storeKey, cardIconFn, minRarity, maxRarity,
+        sortDefault, sortOptions, radioFilters, ItemComponent
+    } = props;
 
     const fullStoreKey = `dl-collection-${storeKey}`;
 
@@ -76,19 +91,21 @@ function Listing(props) {
     }
 
     const [having, setHaving] = useState(loadLocalObj(fullStoreKey));
-    const updateHaving = (id, changes) => {
+    const updateHaving = (id, changes, tempHaving) => {
         const newHaving = {
-            ...having,
+            ...(tempHaving || having),
             [id]: { ...having[id], ...changes }
         };
         setHaving(newHaving);
         saveLocalObj(fullStoreKey, newHaving);
+        return newHaving;
     }
-    const deleteHaving = (id) => {
-        const newHaving = { ...having };
+    const deleteHaving = (id, tempHaving) => {
+        const newHaving = { ...(tempHaving || having) };
         delete newHaving[id];
         setHaving(newHaving);
         saveLocalObj(fullStoreKey, newHaving);
+        return newHaving;
     }
 
     const storeFilterKey = `${fullStoreKey}-filters`;
@@ -99,8 +116,8 @@ function Listing(props) {
             newFilters[filterType] = true;
         } else if (radioFilters.includes(filterType)) {
             newFilters[filterType] = parseInt(target);
-        } else if (filterType === 'Availability') {
-            newFilters.Availability = target;
+        } else if (filterType === 'Availability' || filterType === 'Series') {
+            newFilters[filterType] = target;
         }
         setFilters(newFilters);
         saveLocalObj(storeFilterKey, newFilters);
@@ -120,6 +137,8 @@ function Listing(props) {
             } else if (radioFilters.includes(f) && entry[f] !== filters[f]) {
                 return false;
             } else if (f === 'Availability' && (!entry.Availability || entry.Availability.every((a) => (!(filters.Availability.includes(a)))))) {
+                return false;
+            } else if (f === 'Series' && (!filters.Series.includes(entry.Series.toString()))) {
                 return false;
             }
         }
@@ -167,6 +186,8 @@ function Listing(props) {
                 filters={filters}
                 radioFilters={radioFilters}
                 availabilities={availabilities}
+                series={series}
+                having={storeKey === 'weapon' && having}
             />
             <Typography component="h2" gutterBottom>{statLabel(TextLabel[locale].COMPLETION)}</Typography>
             <Grid container spacing={1} alignItems="flex-start" justify="flex-start">

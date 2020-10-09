@@ -7,7 +7,8 @@ export const WEAPONS = {
     5: 'Lance',
     6: 'Bow',
     7: 'Wand',
-    8: 'Staff'
+    8: 'Staff',
+    9: 'Gun'
 }
 
 export const ELEMENTS = {
@@ -29,8 +30,8 @@ export const RARITIES = {
     6: '6_Star',
 }
 
-export const ELEMENT_COLORS = {
-    Null: 'null',
+export const ELEMENT_BG_COLORS = {
+    Null: 'rgb(192, 192,192)',
     Flame: 'rgb(255, 153, 153)',
     Water: 'rgb(153, 194, 255)',
     Wind: 'rgb(153, 255, 153)',
@@ -38,12 +39,13 @@ export const ELEMENT_COLORS = {
     Shadow: 'rgb(230, 153, 255)'
 }
 
-export const BUILDUP_TYPE = {
-    1: 'Unbind',
-    2: 'Refinement',
-    3: 'Slots',
-    5: 'Bonus',
-    6: 'Copies'
+export const ELEMENT_FG_COLORS = {
+    Null: 'null',
+    Flame: 'rgb(204, 0, 0)',
+    Water: 'rgb(0, 51, 204)',
+    Wind: 'rgb(0, 153, 0)',
+    Light: 'rgb(255, 204, 0)',
+    Shadow: 'rgb(102, 0, 204)'
 }
 
 export const DEFAULT_HAVE = {
@@ -63,5 +65,20 @@ export const DEFAULT_HAVE = {
         4: { c: 5 },
         5: { c: 5 },
         6: { c: 5 },
+    },
+    weapon: {
+        2: { b: { 6: 1 } },
+        3: { b: { 6: 1 } },
+        4: { b: { 6: 1 } },
+        5: { b: { 6: 1 } },
+        6: { b: { 6: 1 } }
     }
+}
+
+export const WEAPON_LEVELS = {
+    2: 10,
+    3: 20,
+    4: 30,
+    5: 70,
+    6: 80
 }

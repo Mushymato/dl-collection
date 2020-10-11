@@ -116,8 +116,8 @@ function WeaponMaterialSummation(props) {
             for (let bi of Object.keys(doneHave.b)) {
                 if (bi === '6') { continue; }
                 for (const bs of bld[bi].slice(0, doneHave.b[bi])) {
+                    totalCost += bs.Cost;
                     for (let m of Object.keys(bs.Mats)) {
-                        console.log(m, bs.Mats[m]);
                         if (!totalMats[m]) { totalMats[m] = 0; }
                         totalMats[m] += bs.Mats[m];
                     }
@@ -132,7 +132,7 @@ function WeaponMaterialSummation(props) {
             <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
                 <DialogContent className={clsx(classes.costTitle)}>
                     <img style={{ verticalAlign: 'middle' }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
-                    <Typography display="inline" gutterBottom>   {totalCost}</Typography>
+                    <Typography display="inline" gutterBottom>   {totalCost.toLocaleString()}</Typography>
                 </DialogContent>
                 <DialogContent dividers>
                     <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">

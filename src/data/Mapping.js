@@ -44,7 +44,7 @@ export const ELEMENT_FG_COLORS = {
     Flame: 'rgb(204, 0, 0)',
     Water: 'rgb(0, 51, 204)',
     Wind: 'rgb(0, 153, 0)',
-    Light: 'rgb(255, 204, 0)',
+    Light: 'rgb(255,180,0)',
     Shadow: 'rgb(102, 0, 204)'
 }
 

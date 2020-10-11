@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import ListingControls from './ListingControls';
 import { DEFAULT_HAVE } from '../data/Mapping';
 import TextLabel from '../data/locale.json';
+import { doneWeaponHave } from './ListingItems';
 
 const weaponSeriesSortOrder = {
     4: -6,
@@ -43,7 +44,14 @@ const CheckFilterMethods = {
     ifNotHave: (entry, have) => (!have),
     ifMaxed: (entry, have) => {
         if (have) {
-            if (entry.Spiral === undefined) { return have.c >= 5; }
+            if (entry.Series !== undefined) {
+                const doneHave = doneWeaponHave(entry);
+                return Object.keys(doneHave).reduce((acc, cur) => {
+                    if (!acc) { return false; }
+                    if (!have[cur]) { return false; }
+                    return have[cur] >= doneHave[cur];
+                })
+            } else if (entry.Spiral === undefined) { return have.c >= 5; }
             else { return entry.Spiral ? (have.lv === 100 && have.mc === 70) : have.lv === 80 && have.mc === 50; }
         }
         return false;

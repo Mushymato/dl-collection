@@ -403,13 +403,19 @@ export const doneWeaponHave = (entry) => {
                 6: 1
             }
         }
-        if (entry.Series === 4 && build[3]) {
-            have.b[3] = build[3].length;
+        if (entry.Series === 4) {
+            have.b[1] = build[1].length;
+            if (build[3]) {
+                have.b[3] = build[3].length;
+            }
         }
         if (build[2]) {
-            have.b[2] = Math.floor(unbindReq / 4);
+            have.b[2] = Math.floor(Math.max(0, unbindReq - 1) / 4);
         }
         return have;
+    } else if (!build[6]) {
+        // special case for agito
+        return fullWeaponHave(entry);
     } else {
         return { b: { 6: 1 } };
     }
@@ -443,14 +449,27 @@ export function WeaponListingItem(props) {
     const build = WeaponBuild[entry.Build];
 
     const createThisHaving = (newHave) => {
-        let tempHaving = updateHaving(id, newHave || doneWeaponHave(entry));
+        // let tempHaving = updateHaving(id, newHave || doneWeaponHave(entry));
+        let tempHaving = updateHaving(id, newHave || { b: { 6: 1 } });
         const prereqs = prereqWeaponHaves(tempHaving, entry.Prereq);
         for (let i of Object.keys(prereqs)) {
             tempHaving = updateHaving(i, prereqs[i], tempHaving);
         }
     }
     const lcHaving = (e) => {
-        createThisHaving();
+        if (have) {
+            const doneHave = doneWeaponHave(entry);
+            for (let bi of Object.keys(have.b)) {
+                doneHave.b[bi] = Math.max(have.b[bi], doneHave.b[bi] || 0);
+            }
+            if (have.p) {
+                doneHave.p = have.p;
+            }
+            console.log(doneHave);
+            updateHaving(id, doneHave);
+        } else {
+            createThisHaving();
+        }
     }
     const deleteThisHaving = () => {
         if (have) {
@@ -476,7 +495,7 @@ export function WeaponListingItem(props) {
     }
     const setBuildValues = (piece, value, have) => {
         have.b[piece] = value;
-        if (piece === '1') {
+        if (piece === '1' && build[5]) {
             have.b[5] = Math.min(have.b[5] || 0, build[5].reduce((acc, cur, idx) => {
                 return cur.UnbindReq > value ? acc : (idx + 1);
             }, 0));
@@ -487,7 +506,7 @@ export function WeaponListingItem(props) {
             have.b[1] = Math.max(have.b[1] || 0, unbindReq);
         }
         if (build[2] && piece !== '2') {
-            have.b[2] = Math.max(have.b[2] || 0, Math.floor(have.b[1] / 4));
+            have.b[2] = Math.max(have.b[2] || 0, Math.floor(Math.max(have.b[1] - 1) / 4));
         }
         if (have.p) {
             for (let p of Object.keys(have.p)) {
@@ -523,7 +542,8 @@ export function WeaponListingItem(props) {
         return have;
     }
     const handleAbilityCheck = (e) => {
-        const p = e.target.name.slice(-1);
+        console.log(e.target.name);
+        const p = e.target.name.split('-').slice(-1);
         const checked = e.target.checked;
         if (have) {
             updateHaving(id, setAbilityValues(p, checked, have));

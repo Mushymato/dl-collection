@@ -16,7 +16,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "cd ../dl-datamine && python exporter/Collection.py && cd ../dl-collection && npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "gh": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -526,7 +526,7 @@ export function WeaponListingItem(props) {
                     updateHaving(id, setBuildValues(piece, value, have));
                 }
             } else {
-                const newHave = doneWeaponHave(entry);
+                const newHave = { b: { 6: 1 } };
                 createThisHaving(setBuildValues(piece, value, newHave));
             }
         }
@@ -548,7 +548,7 @@ export function WeaponListingItem(props) {
         if (have) {
             updateHaving(id, setAbilityValues(p, checked, have));
         } else {
-            const newHave = doneWeaponHave(entry);
+            const newHave = { b: { 6: 1 } };
             createThisHaving(setAbilityValues(p, checked, newHave));
         }
     }

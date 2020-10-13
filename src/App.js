@@ -152,7 +152,7 @@ function App() {
           minRarity={2}
           maxRarity={6}
           sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity', 'bySeries']}
-          radioFilters={['Element', 'Rarity']}
+          radioFilters={['Element', 'Weapon', 'Rarity']}
           ItemComponent={WeaponListingItem}
         />
       </TabPanel>

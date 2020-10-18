@@ -125,6 +125,7 @@ function WeaponMaterialSummation(props) {
             }
         }
     }
+    const sorted = Object.keys(totalMats).sort((a, b) => (Material[a].SortId - Material[b].SortId));
 
     return (
         <Grid item>
@@ -136,7 +137,7 @@ function WeaponMaterialSummation(props) {
                 </DialogContent>
                 <DialogContent dividers>
                     <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">
-                        {Object.keys(totalMats).map((m) => (
+                        {sorted.map((m) => (
                             <MaterialSummaryItem
                                 key={m}
                                 m={m}

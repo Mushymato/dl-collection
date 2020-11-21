@@ -70,13 +70,13 @@ const useStyles = makeStyles({
         paddingRight: 10
     },
     costTitle: {
-        height: '6em'
+        minHeight: '2.5em'
     }
 });
 
 
 function WeaponMaterialSummation(props) {
-    const { locale, having } = props;
+    const { locale, having, visible } = props;
     const classes = useStyles();
 
     const [open, setOpen] = React.useState(false);
@@ -91,7 +91,7 @@ function WeaponMaterialSummation(props) {
     let totalCost = 0;
     const totalMats = {};
     // maybe come bacc and count up passive ability mats too :v
-    for (let id of Object.keys(Weapon)) {
+    for (let id of visible) {
         const wpn = Weapon[id];
         const currHave = having[id];
         const doneHave = doneWeaponHave(wpn);
@@ -159,7 +159,7 @@ function ListingControls(props) {
         order, toggleOrder,
         majorityHaving, toggleAllHaving,
         addFilter, removeFilter, filters, radioFilters,
-        availabilities, series, having
+        availabilities, series, having, visible, isGacha
     } = props;
     const classes = useStyles();
 
@@ -229,11 +229,11 @@ function ListingControls(props) {
                     </FormControl>
                     <IconButton onClick={toggleOrder} size="small">{order === 'ASC' ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}</IconButton>
                 </Grid>
-                <Grid item>
+                {isGacha && <Grid item>
                     <FormControlLabel control={<Checkbox checked={filters.ifHave} name="ifHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].HAVE} />
                     <FormControlLabel control={<Checkbox checked={filters.ifNotHave} name="ifNotHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].NOT_HAVE} />
                     <FormControlLabel control={<Checkbox checked={filters.ifMaxed} name="ifMaxed" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].MAXED} />
-                </Grid>
+                </Grid>}
                 {radioFilters.map((rf) => (
                     <Grid item key={rf}>
                         <FormControl component="fieldset" className={classes.radioGroup}>
@@ -291,7 +291,7 @@ function ListingControls(props) {
                         </Popover>
                     </Grid>
                 )}
-                {having && (<WeaponMaterialSummation locale={locale} having={having} />)}
+                {having && (<WeaponMaterialSummation locale={locale} having={having} visible={visible} />)}
             </Grid>
         </AppBar >
     )

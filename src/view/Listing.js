@@ -192,6 +192,8 @@ function Listing(props) {
                 availabilities={availabilities}
                 series={series}
                 having={storeKey === 'weapon' && having}
+                visible={visibleEntries}
+                isGacha={storeKey === 'chara' || storeKey === 'dragon'}
             />
             <Typography component="h2" gutterBottom>{statLabel(TextLabel[locale].COMPLETION)}</Typography>
             <Grid container spacing={1} alignItems="flex-start" justify="flex-start">

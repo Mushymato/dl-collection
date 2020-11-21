@@ -27,7 +27,7 @@ import TextLabel from '../data/locale.json';
 import Weapon from '../data/weapon.json';
 import WeaponSeries from '../data/weaponseries.json';
 import WeaponBuild from '../data/weaponbuild.json';
-import { ELEMENTS, ELEMENT_BG_COLORS, ELEMENT_FG_COLORS, DEFAULT_HAVE } from '../data/Mapping';
+import { ELEMENTS, ELEMENT_BG_COLORS, ELEMENT_FG_COLORS, DEFAULT_HAVE, WEAPON_LEVELS } from '../data/Mapping';
 
 const useStyles = makeStyles({
     root: {
@@ -560,6 +560,9 @@ export function WeaponListingItem(props) {
                     className={clsx(classes.cardIcon)}
                     image={cardIconUrl}
                     title={cardName} alt={cardName} >
+                    {have && (<Box className={clsx(classes.mcIcon, have.b[5] && classes.mcIconMaxed)}>
+                        {WEAPON_LEVELS[entry.Rarity][have.b[1] || 0]}
+                    </Box>)}
                 </CardMedia>
             </CardActionArea>
             <CardContent className={clsx(classes.cardName)}>

@@ -152,7 +152,11 @@ function Listing(props) {
         let newHaving = { ...having };
         if (!majorityHaving) {
             for (const id of visibleEntries) {
-                newHaving[id] = having[id] || DEFAULT_HAVE[storeKey][entries[id].Rarity];
+                if (storeKey === 'weapon') {
+                    newHaving[id] = doneWeaponHave(entries[id]);
+                } else {
+                    newHaving[id] = having[id] || DEFAULT_HAVE[storeKey][entries[id].Rarity];
+                }
             }
         } else {
             for (const id of visibleEntries) {

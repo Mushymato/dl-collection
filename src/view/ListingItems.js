@@ -403,14 +403,13 @@ export const doneWeaponHave = (entry) => {
                 6: 1
             }
         }
-        if (entry.Series === 4) {
-            have.b[1] = build[1].length;
-            if (build[3]) {
-                have.b[3] = build[3].length;
-            }
-        }
         if (build[2]) {
             have.b[2] = Math.floor(Math.max(0, unbindReq - 1) / 4);
+        }
+        if (entry.Series === 4) {
+            have.b[1] = build[1].length;
+            have.b[2] = build[2].length;
+            have.b[3] = build[3].length;
         }
         return have;
     } else if (!build[6]) {
@@ -441,7 +440,6 @@ export function WeaponListingItem(props) {
     const classes = useStyles();
     const cardName = entry[`Name${locale}`];
     let cardIconUrl = null;
-    console.log(have);
     if (have && have.b[2] && have.b[2] === 2) {
         cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Skins["1"]}.png`;
     } else {
@@ -471,7 +469,6 @@ export function WeaponListingItem(props) {
             if (have.p) {
                 doneHave.p = have.p;
             }
-            console.log(doneHave);
             updateHaving(id, doneHave);
         } else {
             createThisHaving();
@@ -548,7 +545,6 @@ export function WeaponListingItem(props) {
         return have;
     }
     const handleAbilityCheck = (e) => {
-        console.log(e.target.name);
         const p = e.target.name.split('-').slice(-1);
         const checked = e.target.checked;
         if (have) {

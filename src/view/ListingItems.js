@@ -440,7 +440,13 @@ export function WeaponListingItem(props) {
     const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
     const classes = useStyles();
     const cardName = entry[`Name${locale}`];
-    const cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Skins["0"]}.png`;
+    let cardIconUrl = null;
+    console.log(have);
+    if (have && have.b[2] && have.b[2] === 2) {
+        cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Skins["1"]}.png`;
+    } else {
+        cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Skins["0"]}.png`;
+    }
 
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => { setOpen(true); };

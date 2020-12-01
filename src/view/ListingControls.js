@@ -99,7 +99,7 @@ function WeaponMaterialSummation(props) {
         if (currHave) {
             for (let bi of Object.keys(doneHave.b)) {
                 if (bi === '6' || doneHave.b[bi] <= currHave.b[bi]) { continue; }
-                for (const bs of bld[bi].slice(currHave.b[bi] ? currHave.b[bi] - 1 : 0, doneHave.b[bi])) {
+                for (const bs of bld[bi].slice(currHave.b[bi] ? currHave.b[bi] : 0, doneHave.b[bi])) {
                     totalCost += bs.Cost;
                     for (let m of Object.keys(bs.Mats)) {
                         if (!totalMats[m]) { totalMats[m] = 0; }

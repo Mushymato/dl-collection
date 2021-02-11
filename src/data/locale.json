@@ -4,6 +4,7 @@
         "DRAGONS": "Dragons",
         "WEAPONS": "Weapons",
         "AMULETS": "Wyrmprints",
+        "FACILITY": "Facility",
         "CHECK_ALL": "All",
         "ID": "ID",
         "NAME": "Name",
@@ -13,6 +14,7 @@
         "HAVE": "Have",
         "NOT_HAVE": "Not Have",
         "MAXED": "Maxed",
+        "NOT_MAXED": "Not Maxed",
         "SORT_BY": "Sort by",
         "AVAILABILITY": "Availability",
         "COUNT": "Count",
@@ -23,7 +25,8 @@
         "BUILDUP_3": "Slots",
         "BUILDUP_5": "Bonus",
         "BUILDUP_6": "Copies",
-        "MATS": "Materials"
+        "MATS": "Materials",
+        "TYPE": "Type"
     },
     "JP": {
         "ADVENTURERS": "\u30ad\u30e3\u30e9",
@@ -39,6 +42,7 @@
         "HAVE": "\u6240\u6301",
         "NOT_HAVE": "\u672a\u6240\u6301",
         "MAXED": "\u30de\u30ca\u30b5",
+        "NOT_MAXED": "Not Maxed",
         "SORT_BY": "\u30bd\u30fc\u30c8",
         "AVAILABILITY": "\u5165\u624b",
         "COUNT": "\u30db\u30fc\u30eb\u30c9",
@@ -63,7 +67,8 @@
         "BUILDUP_3": "\u30b9\u30ed\u30c3\u30c8",
         "BUILDUP_5": "Bonus",
         "BUILDUP_6": "Copies",
-        "MATS": "Materials"
+        "MATS": "Materials",
+        "TYPE": "Type"
     },
     "CN": {
         "ADVENTURERS": "\u89d2\u8272",
@@ -79,6 +84,7 @@
         "HAVE": "\u6709",
         "NOT_HAVE": "\u65e0",
         "MAXED": "\u6ee1\u914d",
+        "NOT_MAXED": "Not Maxed",
         "SORT_BY": "\u6392\u5e8f",
         "AVAILABILITY": "\u83b7\u53d6",
         "COUNT": "\u6301\u6709",
@@ -103,6 +109,7 @@
         "BUILDUP_3": "\u63d2\u69fd",
         "BUILDUP_5": "Bonus",
         "BUILDUP_6": "Copies",
-        "MATS": "Materials"
+        "MATS": "Materials",
+        "TYPE": "Type"
     }
 }

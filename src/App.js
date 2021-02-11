@@ -11,7 +11,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
 import Listing from './view/Listing';
-import { CharaListingItem, UnbindableListingItem, WeaponListingItem, amuletCardIcon } from './view/ListingItems';
+import { CharaListingItem, UnbindableListingItem, WeaponListingItem, FortListingItem, amuletCardIcon } from './view/ListingItems';
 
 import TextLabel from './data/locale.json';
 import Chara from './data/chara.json';
@@ -20,6 +20,7 @@ import Weapon from './data/weapon.json';
 import Amulet from './data/amulet.json';
 import Availabilities from './data/availabilities.json';
 import WeaponSeries from './data/weaponseries.json';
+import Fort from './data/fort.json';
 
 const theme = createMuiTheme({
   typography: {
@@ -98,6 +99,7 @@ function App() {
             <Tab label={TextLabel[locale].DRAGONS} {...a11yProps(1)} />
             <Tab label={TextLabel[locale].AMULETS} {...a11yProps(2)} />
             <Tab label={TextLabel[locale].WEAPONS} {...a11yProps(3)} />
+            <Tab label={TextLabel[locale].FACILITY} {...a11yProps(4)} />
           </Tabs>
         </Toolbar>
       </AppBar>
@@ -146,7 +148,6 @@ function App() {
         <Listing
           locale={locale}
           entries={Weapon}
-          // availabilities={Object.keys(WeaponSeries).map((i) => WeaponSeries[i][`Name${locale}`])}
           series={WeaponSeries}
           storeKey={'weapon'}
           minRarity={2}
@@ -154,6 +155,17 @@ function App() {
           sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity', 'bySeries']}
           radioFilters={['Element', 'Weapon', 'Rarity']}
           ItemComponent={WeaponListingItem}
+        />
+      </TabPanel>
+      <TabPanel value={idx} index={4} dir={direction}>
+        <Listing
+          locale={locale}
+          entries={Fort}
+          storeKey={'fort'}
+          sortDefault={'byID'}
+          sortOptions={['byID', 'byName', 'byType']}
+          radioFilters={[]}
+          ItemComponent={FortListingItem}
         />
       </TabPanel>
     </ThemeProvider>

@@ -5,7 +5,8 @@ import Typography from '@material-ui/core/Typography';
 import ListingControls from './ListingControls';
 import { DEFAULT_HAVE } from '../data/Mapping';
 import TextLabel from '../data/locale.json';
-import { doneWeaponHave } from './ListingItems';
+import { doneWeaponHave, fortMaxNum } from './ListingItems';
+import WeaponBuild from '../data/weaponbuild.json';
 
 const weaponSeriesSortOrder = {
     4: -6,
@@ -25,6 +26,7 @@ const SortMethods = {
     byWeapon: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity)),
     byRarity: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
     bySeries: (entries) => Object.keys(entries).sort((a, b) => (weaponSeriesSortOrder[entries[a].Series] - weaponSeriesSortOrder[entries[b].Series] || entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
+    byType: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b))
 }
 
 const CheckFilterMethods = {
@@ -43,6 +45,12 @@ const CheckFilterMethods = {
             else { return entry.Spiral ? (have.lv === 100 && have.mc === 70) : have.lv === 80 && have.mc === 50; }
         }
         return false;
+    },
+    ifNotMaxLevel: (entry, have) => {
+        if (have) {
+            return entry.Detail.length > Math.min(...Object.values(have));
+        }
+        return true;
     }
 }
 
@@ -154,6 +162,8 @@ function Listing(props) {
             for (const id of visibleEntries) {
                 if (storeKey === 'weapon') {
                     newHaving[id] = doneWeaponHave(entries[id]);
+                } else if (storeKey === 'fort') {
+                    newHaving[id] = (new Array(fortMaxNum(entries[id]))).fill(entries[id].Detail.length);
                 } else {
                     newHaving[id] = having[id] || DEFAULT_HAVE[storeKey][entries[id].Rarity];
                 }
@@ -168,8 +178,17 @@ function Listing(props) {
     }
 
     const statLabel = (title) => {
-        const p = ((100 * visibleHave / visibleEntries.length) >> 0)
-        return `${title}: ${visibleHave} / ${visibleEntries.length} (${p}%)`
+        let count = visibleHave;
+        let total = visibleEntries.length;
+        if (storeKey === 'weapon') {
+            count = visibleEntries.reduce((res, id) => (res + (having[id] ? (having[id].b[5] ? 1 : 0) : 0)), 0);
+            total = visibleEntries.reduce((res, id) => (res + (WeaponBuild[entries[id].Build][5] ? 1 : 0)), 0);
+        } else if (storeKey === 'fort') {
+            count = visibleEntries.reduce((res, id) => (res + (having[id] ? Object.values(having[id]).reduce((a, b) => a + b, 0) : 0)), 0);
+            total = visibleEntries.reduce((res, id) => (res + (fortMaxNum(entries[id]) * entries[id].Detail.length)), 0);
+        }
+        const p = ((100 * count / total) >> 0)
+        return `${title}: ${count} / ${total} (${p}%)`
     }
 
     return (
@@ -191,9 +210,11 @@ function Listing(props) {
                 radioFilters={radioFilters}
                 availabilities={availabilities}
                 series={series}
-                having={storeKey === 'weapon' && having}
+                havingWeapon={storeKey === 'weapon' && having}
+                havingFort={storeKey === 'fort' && having}
                 visible={visibleEntries}
                 isGacha={storeKey === 'chara' || storeKey === 'dragon'}
+                isFort={storeKey === 'fort'}
             />
             <Typography component="h2" gutterBottom>{statLabel(TextLabel[locale].COMPLETION)}</Typography>
             <Grid container spacing={1} alignItems="flex-start" justify="flex-start">

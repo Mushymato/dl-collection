@@ -23,13 +23,15 @@ import Typography from '@material-ui/core/Typography';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
+import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
 
 import TextLabel from '../data/locale.json';
 import Weapon from '../data/weapon.json';
 import WeaponBuild from '../data/weaponbuild.json';
+import Fort from '../data/fort.json';
 import Material from '../data/material.json';
 import { ELEMENTS, WEAPONS, RARITIES } from '../data/Mapping';
-import { doneWeaponHave, MaterialSummaryItem } from './ListingItems';
+import { doneWeaponHave, MaterialSummaryItem, fortMaxNum } from './ListingItems';
 
 const useStyles = makeStyles({
     root: {
@@ -152,6 +154,73 @@ function WeaponMaterialSummation(props) {
     )
 }
 
+
+function FortMaterialSummation(props) {
+    const { locale, having, visible } = props;
+    const classes = useStyles();
+
+    const [open, setOpen] = React.useState(false);
+
+    const toggleOpen = (open) => (event) => {
+        if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
+        setOpen(open);
+    };
+
+    let totalCost = 0;
+    let totalTime = 0;
+    const totalMats = {};
+    for (let id of visible) {
+        const entry = Fort[id];
+        const currHave = having[id];
+        let currIter = null;
+        if (currHave) {
+            currIter = Object.values(currHave);
+        } else {
+            currIter = Array(fortMaxNum(entry)).fill(0);
+        }
+        for (const curLv of currIter) {
+            for (const detail of entry.Detail.slice(curLv)) {
+                totalCost += detail.Cost;
+                totalTime += detail.Time;
+                for (let m of Object.keys(detail.Mats)) {
+                    if (!totalMats[m]) { totalMats[m] = 0; }
+                    totalMats[m] += detail.Mats[m];
+                }
+            }
+        }
+    }
+    const sorted = Object.keys(totalMats).sort((a, b) => (Material[a].SortId - Material[b].SortId));
+
+    return (
+        <Grid item>
+            <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
+            <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
+                <DialogContent className={clsx(classes.costTitle)}>
+                    <img style={{ verticalAlign: 'middle' }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
+                    <Typography display="inline" gutterBottom> {totalCost.toLocaleString()}</Typography>
+                    <QueryBuilderIcon style={{ verticalAlign: 'middle', marginLeft: 4 }} />
+                    <Typography display="inline" gutterBottom> {totalTime.toLocaleString()}s</Typography>
+                </DialogContent>
+                <DialogContent dividers>
+                    <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">
+                        {sorted.map((m) => (
+                            <MaterialSummaryItem
+                                key={m}
+                                m={m}
+                                count={totalMats[m]}
+                                name={Material[m][`Name${locale}`]}
+                            />
+                        ))}
+                    </Grid>
+                </DialogContent>
+            </Dialog>
+        </Grid>
+    )
+}
+
+
 function ListingControls(props) {
     const {
         locale, minRarity, maxRarity,
@@ -159,7 +228,8 @@ function ListingControls(props) {
         order, toggleOrder,
         majorityHaving, toggleAllHaving,
         addFilter, removeFilter, filters, radioFilters,
-        availabilities, series, having, visible, isGacha
+        availabilities, series, havingWeapon, havingFort,
+        visible, isGacha, isFort
     } = props;
     const classes = useStyles();
 
@@ -234,6 +304,9 @@ function ListingControls(props) {
                     <FormControlLabel control={<Checkbox checked={filters.ifNotHave} name="ifNotHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].NOT_HAVE} />
                     <FormControlLabel control={<Checkbox checked={filters.ifMaxed} name="ifMaxed" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].MAXED} />
                 </Grid>}
+                {isFort && <Grid item>
+                    <FormControlLabel control={<Checkbox checked={filters.ifNotMaxLevel} name="ifNotMaxLevel" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].NOT_MAXED} />
+                </Grid>}
                 {radioFilters.map((rf) => (
                     <Grid item key={rf}>
                         <FormControl component="fieldset" className={classes.radioGroup}>
@@ -291,7 +364,8 @@ function ListingControls(props) {
                         </Popover>
                     </Grid>
                 )}
-                {having && (<WeaponMaterialSummation locale={locale} having={having} visible={visible} />)}
+                {havingWeapon && (<WeaponMaterialSummation locale={locale} having={havingWeapon} visible={visible} />)}
+                {havingFort && (<FortMaterialSummation locale={locale} having={havingFort} visible={visible} />)}
             </Grid>
         </AppBar >
     )

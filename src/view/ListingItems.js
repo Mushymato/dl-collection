@@ -115,6 +115,37 @@ const useStyles = makeStyles({
     mcIconMaxed: {
         color: '#ffcc00'
     },
+    circleIcon: {
+        backgroundColor: 'gray',
+        textAlign: 'center',
+        width: 19,
+        height: 19,
+        lineHeight: '20px',
+        fontWeight: 700,
+        color: 'white',
+        fontSize: '0.9em',
+        textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+        // fontSize: '1em',
+        // '-webkit-text-stroke': '1px black',
+        position: 'absolute',
+        borderRadius: 50,
+        top: 5,
+    },
+    circleIconMaxed: {
+        color: '#48D1CC'
+    },
+    circleIcon0: {
+        left: 4
+    },
+    circleIcon1: {
+        left: 25,
+    },
+    circleIcon2: {
+        left: 46,
+    },
+    circleIcon3: {
+        left: 67,
+    },
     unbindIcons: {
         position: 'absolute',
         bottom: 0
@@ -577,8 +608,8 @@ export function WeaponListingItem(props) {
                 </Button>
             </CardContent>
         </Card>
-        <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
-            <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+        <Dialog onClose={handleClose} aria-labelledby={`${category}-${id}-dialog`} open={open}>
+            <DialogTitle id={`${category}-${id}-dialog`} onClose={handleClose}>
                 <FormControlLabel
                     control={<Checkbox name={`${id}-create`}
                         checked={!!(have)}
@@ -593,7 +624,7 @@ export function WeaponListingItem(props) {
                 {Object.keys(build).map((piece) => {
                     const buildInfo = build[piece];
                     const buildpiece = TextLabel[locale][`BUILDUP_${piece}`];
-                    const buildvalue = (have && have.b) ? (have.b[piece] || 0) : 0
+                    const buildvalue = (have && have.b) ? (have.b[piece] || 0) : 0;
                     return (
                         <Box key={piece}>
                             <Typography id="build-slider" gutterBottom>
@@ -656,4 +687,130 @@ export function MaterialSummaryItem(props) {
             </Card>
         </Grid>
     );
+}
+
+export const fortMaxNum = (entry) => {
+    if (entry.NameEN === 'Rupie Mine') {
+        return 4;
+    }
+    if (entry.NameEN.endsWith('Altar') || entry.NameEN.endsWith('Dojo')) {
+        return 2;
+    }
+    return 1
+}
+
+export function FortListingItem(props) {
+    const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
+    const classes = useStyles();
+    const cardName = entry[`Name${locale}`];
+    let cardIconUrl = null;
+    if (have) {
+        const maxHave = Math.max(...Object.values(have));
+        if (maxHave <= 0) {
+            deleteHaving(id);
+            cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Detail[0].Icon}.png`;
+        } else {
+            cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Detail[maxHave - 1].Icon}.png`;
+        }
+    } else {
+        cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.Detail[0].Icon}.png`;
+    }
+
+    const [open, setOpen] = React.useState(false);
+    const handleOpen = () => { setOpen(true); };
+    const handleClose = () => { setOpen(false); };
+
+    const maxLv = entry.Detail.length;
+    const maxNum = fortMaxNum(entry);
+
+    const lcHaving = (e) => {
+        if (have) {
+            updateHaving(id, (new Array(maxNum)).fill(maxLv));
+        } else {
+            updateHaving(id, (new Array(maxNum)).fill(1));
+        }
+    }
+    const rcHaving = (e) => {
+        deleteHaving(id);
+        e.preventDefault();
+    }
+    const handleDialogCheck = (e) => {
+        if (e.target.checked) {
+            updateHaving(id, (new Array(maxNum)).fill(1));
+        } else {
+            deleteHaving(id);
+        }
+    }
+    const makeLevelChange = (idx) => {
+        return (e, value) => {
+            if (have) {
+                have[idx] = value;
+                updateHaving(id, have);
+            } else {
+                const newHave = (new Array(maxNum)).fill(0);
+                newHave[idx] = value;
+                updateHaving(id, newHave);
+            }
+        }
+    }
+
+    return (<Grid item>
+        <Card className={clsx(classes.root, have && (classes[ELEMENTS[entry.Element]] || classes.Null))}>
+            <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
+                <CardMedia
+                    className={clsx(classes.cardIcon)}
+                    image={cardIconUrl}
+                    title={cardName} alt={cardName} >
+                    {have && (Object.keys(have).map((key) => (<Box className={clsx(classes.circleIcon, classes[`circleIcon${key}`], (have[key] >= maxLv) && classes.circleIconMaxed)}>{have[key]}</Box>)))}
+                </CardMedia>
+            </CardActionArea>
+            <CardContent className={clsx(classes.cardName)}>
+                <Button
+                    className={clsx(classes.cardNameText, locale !== 'EN' && classes.cardNameNoWrap)}
+                    size="small"
+                    onClick={handleOpen}
+                    endIcon={<AddIcon />}>
+                    {insertLinebreak(cardName, locale)}
+                </Button>
+            </CardContent>
+        </Card>
+        <Dialog onClose={handleClose} aria-labelledby={`${category}-${id}-dialog`} open={open} fullWidth={'md'}
+        >
+            <DialogTitle id={`${category}-${id}-dialog`} onClose={handleClose}>
+                <FormControlLabel
+                    control={<Checkbox name={`${id}-create`}
+                        checked={!!(have)}
+                        onClick={handleDialogCheck}
+                        color="default"
+                        icon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon, classes.grayscale)} />}
+                        checkedIcon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon)} />} />}
+                    label={<Box><Typography>{cardName}</Typography></Box>}
+                />
+            </DialogTitle>
+            <DialogContent dividers>
+                {Array(maxNum).fill(0).map((_, idx) => {
+                    const currentLevel = have ? have[idx] : 0;
+                    return (
+                        <Box key={idx}>
+                            <Typography id="level-slider" gutterBottom>
+                                {`${cardName} ${(idx + 1)} - Lv.${currentLevel}`}
+                            </Typography>
+                            <Slider
+                                name={`${id}-level-${idx + 1}`}
+                                aria-labelledby="level-slider"
+                                valueLabelDisplay="auto"
+                                value={currentLevel}
+                                onChange={makeLevelChange(idx)}
+                                step={1}
+                                marks
+                                min={0}
+                                max={maxLv}
+                                classes={classes.FgNull}
+                            />
+                        </Box>
+                    )
+                })}
+            </DialogContent>
+        </Dialog>
+    </Grid >)
 }

@@ -184,8 +184,9 @@ function Listing(props) {
             count = visibleEntries.reduce((res, id) => (res + (having[id] ? (having[id].b[5] ? 1 : 0) : 0)), 0);
             total = visibleEntries.reduce((res, id) => (res + (WeaponBuild[entries[id].Build][5] ? 1 : 0)), 0);
         } else if (storeKey === 'fort') {
-            count = visibleEntries.reduce((res, id) => (res + (having[id] ? Object.values(having[id]).reduce((a, b) => a + b, 0) : 0)), 0);
-            total = visibleEntries.reduce((res, id) => (res + (fortMaxNum(entries[id]) * entries[id].Detail.length)), 0);
+            const halidom = having[100101] ? having[100101][0] : 0;
+            count = visibleEntries.reduce((res, id) => (res + (having[id] ? Object.values(having[id]).reduce((a, b) => a + b, 0) : 0)), 0) - halidom;
+            total = visibleEntries.reduce((res, id) => (res + (fortMaxNum(entries[id]) * entries[id].Detail.length)), 0) - 10;
         }
         const p = ((100 * count / total) >> 0)
         return `${title}: ${count} / ${total} (${p}%)`

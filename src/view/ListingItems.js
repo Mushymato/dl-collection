@@ -423,7 +423,7 @@ const fullWeaponHave = (entry) => {
     return have;
 }
 
-export const doneWeaponHave = (entry) => {
+export const doneWeaponHave = (entry, isFullAgito) => {
     const build = WeaponBuild[entry.Build];
     if (build[5]) {
         const unbindReq = Math.max(build[5].map((b) => b.UnbindReq));
@@ -437,7 +437,7 @@ export const doneWeaponHave = (entry) => {
         if (build[2]) {
             have.b[2] = Math.floor(Math.max(0, unbindReq - 1) / 4);
         }
-        if (entry.Series === 4) {
+        if (entry.Series === 4 && isFullAgito) {
             have.b[1] = build[1].length;
             have.b[2] = build[2].length;
             have.b[3] = build[3].length;

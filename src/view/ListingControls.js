@@ -73,6 +73,11 @@ const useStyles = makeStyles({
     },
     costTitle: {
         minHeight: '2.5em'
+    },
+    agitoMaterialToggle: {
+        float: "right",
+        position: "relative",
+        top: -4
     }
 });
 
@@ -82,6 +87,8 @@ function WeaponMaterialSummation(props) {
     const classes = useStyles();
 
     const [open, setOpen] = React.useState(false);
+    const [fullAgito, setFullAgito] = React.useState("Agito Weapons Maxed");
+    const isFullAgito = fullAgito === "Agito Weapons Maxed";
 
     const toggleOpen = (open) => (event) => {
         if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -90,13 +97,21 @@ function WeaponMaterialSummation(props) {
         setOpen(open);
     };
 
+    const toggleFullAgito = (event) => {
+        if (isFullAgito) {
+            setFullAgito("Agito Weapon Bonus Only");
+        } else {
+            setFullAgito("Agito Weapons Maxed");
+        }
+    }
+
     let totalCost = 0;
     const totalMats = {};
     // maybe come bacc and count up passive ability mats too :v
     for (let id of visible) {
         const wpn = Weapon[id];
         const currHave = having[id];
-        const doneHave = doneWeaponHave(wpn);
+        const doneHave = doneWeaponHave(wpn, isFullAgito);
         const bld = WeaponBuild[wpn.Build];
         if (currHave) {
             for (let bi of Object.keys(doneHave.b)) {
@@ -136,6 +151,12 @@ function WeaponMaterialSummation(props) {
                 <DialogContent className={clsx(classes.costTitle)}>
                     <img style={{ verticalAlign: 'middle' }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
                     <Typography display="inline" gutterBottom>   {totalCost.toLocaleString()}</Typography>
+                    <Button
+                        onClick={toggleFullAgito}
+                        name="fullAgito"
+                        variant="outlined"
+                        className={clsx(classes.agitoMaterialToggle)}
+                    >{fullAgito}</Button>
                 </DialogContent>
                 <DialogContent dividers>
                     <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">

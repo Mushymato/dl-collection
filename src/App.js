@@ -11,7 +11,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
 import Listing from './view/Listing';
-import { CharaListingItem, UnbindableListingItem, WeaponListingItem, FortListingItem, amuletCardIcon } from './view/ListingItems';
+import { CharaListingItem, DragonListingItem, WeaponListingItem, FortListingItem, AmuletListingItem, } from './view/ListingItems';
 
 import TextLabel from './data/locale.json';
 import Chara from './data/chara.json';
@@ -126,7 +126,7 @@ function App() {
           maxRarity={5}
           sortOptions={['byID', 'byName', 'byElement', 'byRarity']}
           radioFilters={['Element', 'Rarity']}
-          ItemComponent={UnbindableListingItem}
+          ItemComponent={DragonListingItem}
         />
       </TabPanel>
       <TabPanel value={idx} index={2} dir={direction}>
@@ -135,13 +135,13 @@ function App() {
           entries={Amulet}
           availabilities={Availabilities.Amulet}
           storeKey={'amulet'}
-          cardIconFn={amuletCardIcon}
-          minRarity={2}
-          maxRarity={5}
+          // cardIconFn={amuletCardIcon}
+          minRarity={1}
+          maxRarity={3}
           sortDefault={'byID'}
           sortOptions={['byID', 'byName', 'byRarity']}
-          radioFilters={['Rarity']}
-          ItemComponent={UnbindableListingItem}
+          radioFilters={['Form', 'Union']}
+          ItemComponent={AmuletListingItem}
         />
       </TabPanel>
       <TabPanel value={idx} index={3} dir={direction}>

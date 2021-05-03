@@ -11,6 +11,7 @@
         "ELEMENT": "Element",
         "WEAPON": "Weapon",
         "RARITY": "Rarity",
+        "FORM": "Rarity",
         "HAVE": "Have",
         "NOT_HAVE": "Not Have",
         "MAXED": "Maxed",
@@ -26,7 +27,8 @@
         "BUILDUP_5": "Bonus",
         "BUILDUP_6": "Copies",
         "MATS": "Materials",
-        "TYPE": "Type"
+        "TYPE": "Type",
+        "UNION": "Affinity"
     },
     "JP": {
         "ADVENTURERS": "\u30ad\u30e3\u30e9",
@@ -39,6 +41,7 @@
         "ELEMENT": "\u5c5e\u6027",
         "WEAPON": "\u6b66\u5668",
         "RARITY": "\u30ec\u30a2\u30ea\u30c6\u30a3",
+        "FORM": "\u30ec\u30a2\u30ea\u30c6\u30a3",
         "HAVE": "\u6240\u6301",
         "NOT_HAVE": "\u672a\u6240\u6301",
         "MAXED": "\u30de\u30ca\u30b5",
@@ -68,7 +71,8 @@
         "BUILDUP_5": "Bonus",
         "BUILDUP_6": "Copies",
         "MATS": "Materials",
-        "TYPE": "Type"
+        "TYPE": "Type",
+        "UNION": "ユニオン"
     },
     "CN": {
         "ADVENTURERS": "\u89d2\u8272",
@@ -81,6 +85,7 @@
         "ELEMENT": "\u5c5e\u6027",
         "WEAPON": "\u6b66\u5668",
         "RARITY": "\u7a00\u6709\u5ea6",
+        "FORM": "\u7a00\u6709\u5ea6",
         "HAVE": "\u6709",
         "NOT_HAVE": "\u65e0",
         "MAXED": "\u6ee1\u914d",
@@ -110,6 +115,7 @@
         "BUILDUP_5": "Bonus",
         "BUILDUP_6": "Copies",
         "MATS": "Materials",
-        "TYPE": "Type"
+        "TYPE": "Type",
+        "UNION": "联阵"
     }
 }

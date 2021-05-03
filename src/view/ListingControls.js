@@ -26,12 +26,20 @@ import SelectAllIcon from '@material-ui/icons/SelectAll';
 import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
 
 import TextLabel from '../data/locale.json';
+
 import Weapon from '../data/weapon.json';
 import WeaponBuild from '../data/weaponbuild.json';
+import WeaponLevel from '../data/weaponlevel.json';
+
+import Amulet from '../data/amulet.json';
+import AmuletBuild from '../data/amuletbuild.json';
+import AmuletLevel from '../data/amuletlevel.json';
+
 import Fort from '../data/fort.json';
 import Material from '../data/material.json';
-import { ELEMENTS, WEAPONS, RARITIES } from '../data/Mapping';
-import { doneWeaponHave, MaterialSummaryItem, fortMaxNum } from './ListingItems';
+
+import { ELEMENTS, WEAPONS, FORMS, unionIcon } from '../data/Mapping';
+import { doneWeaponHave, doneAmuletHave, MaterialSummaryItem, fortMaxNum } from './ListingItems';
 
 const useStyles = makeStyles({
     root: {
@@ -74,7 +82,7 @@ const useStyles = makeStyles({
     costTitle: {
         minHeight: '2.5em'
     },
-    agitoMaterialToggle: {
+    fullToggle: {
         float: "right",
         position: "relative",
         top: -4
@@ -107,38 +115,54 @@ function WeaponMaterialSummation(props) {
 
     let totalCost = 0;
     const totalMats = {};
-    // maybe come bacc and count up passive ability mats too :v
     for (let id of visible) {
-        const wpn = Weapon[id];
+        const entry = Weapon[id];
         const currHave = having[id];
-        const doneHave = doneWeaponHave(wpn, isFullAgito);
-        const bld = WeaponBuild[wpn.Build];
+        const doneHave = doneWeaponHave(entry, entry.Series === 4 && isFullAgito);
+        const build = WeaponBuild[entry.Build];
         if (currHave) {
             for (let bi of Object.keys(doneHave.b)) {
                 if (bi === '6' || doneHave.b[bi] <= currHave.b[bi]) { continue; }
-                for (const bs of bld[bi].slice(currHave.b[bi] ? currHave.b[bi] : 0, doneHave.b[bi])) {
+                for (const bs of build[bi].slice(currHave.b[bi] ? currHave.b[bi] : 0, doneHave.b[bi])) {
                     totalCost += bs.Cost;
                     for (let m of Object.keys(bs.Mats)) {
                         if (!totalMats[m]) { totalMats[m] = 0; }
                         totalMats[m] += bs.Mats[m];
                     }
+                }
+            }
+            const currLevelMats = WeaponLevel[entry.Rarity][currHave.b[1] || 0].Mats;
+            const doneLevelMats = WeaponLevel[entry.Rarity][doneHave.b[1] || 0].Mats;
+            for (let m of Object.keys(doneLevelMats)) {
+                if (currLevelMats[m]) {
+                    const diff = doneLevelMats[m] - currLevelMats[m];
+                    if (diff > 0){
+                        totalMats[m] = diff;
+                    }
+                } else {
+                    totalMats[m] = doneLevelMats[m];
                 }
             }
         } else {
-            totalCost += wpn.Cost;
-            for (let m of Object.keys(wpn.Mats)) {
+            totalCost += entry.Cost;
+            for (let m of Object.keys(entry.Mats)) {
                 if (!totalMats[m]) { totalMats[m] = 0; }
-                totalMats[m] += wpn.Mats[m];
+                totalMats[m] += entry.Mats[m];
             }
             for (let bi of Object.keys(doneHave.b)) {
                 if (bi === '6') { continue; }
-                for (const bs of bld[bi].slice(0, doneHave.b[bi])) {
+                for (const bs of build[bi].slice(0, doneHave.b[bi])) {
                     totalCost += bs.Cost;
                     for (let m of Object.keys(bs.Mats)) {
                         if (!totalMats[m]) { totalMats[m] = 0; }
                         totalMats[m] += bs.Mats[m];
                     }
                 }
+            }
+            const doneLevelMats = WeaponLevel[entry.Rarity][doneHave.b[1] || 0].Mats;
+            for (let m of Object.keys(doneLevelMats)) {
+                if (!totalMats[m]) { totalMats[m] = 0; }
+                totalMats[m] = doneLevelMats[m];
             }
         }
     }
@@ -149,13 +173,13 @@ function WeaponMaterialSummation(props) {
             <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
             <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
                 <DialogContent className={clsx(classes.costTitle)}>
-                    <img style={{ verticalAlign: 'middle' }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
+                    <img style={{ verticalAlign: 'middle', width: 30 }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
                     <Typography display="inline" gutterBottom>   {totalCost.toLocaleString()}</Typography>
                     <Button
                         onClick={toggleFullAgito}
                         name="fullAgito"
                         variant="outlined"
-                        className={clsx(classes.agitoMaterialToggle)}
+                        className={clsx(classes.fullToggle)}
                     >{fullAgito}</Button>
                 </DialogContent>
                 <DialogContent dividers>
@@ -219,7 +243,7 @@ function FortMaterialSummation(props) {
             <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
             <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
                 <DialogContent className={clsx(classes.costTitle)}>
-                    <img style={{ verticalAlign: 'middle' }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
+                    <img style={{ verticalAlign: 'middle', width: 30 }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
                     <Typography display="inline" gutterBottom> {totalCost.toLocaleString()}</Typography>
                     <QueryBuilderIcon style={{ verticalAlign: 'middle', marginLeft: 4 }} />
                     <Typography display="inline" gutterBottom> {totalTime.toLocaleString()}s</Typography>
@@ -242,6 +266,118 @@ function FortMaterialSummation(props) {
 }
 
 
+function AmuletMaterialSummation(props) {
+    const { locale, having, visible } = props;
+    const classes = useStyles();
+
+    const [open, setOpen] = React.useState(false);
+    const [fullCopies, setFullCopies] = React.useState("4 Copies");
+    const isFullCopies = fullCopies === "4 Copies";
+
+    const toggleOpen = (open) => (event) => {
+        if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
+        setOpen(open);
+    };
+
+    const toggleFullCopies = (event) => {
+        if (isFullCopies) {
+            setFullCopies("1 Copy");
+        } else {
+            setFullCopies("4 Copies");
+        }
+    }
+
+    let totalCost = 0;
+    const totalMats = {};
+    for (let id of visible) {
+        const entry = Amulet[id];
+        const currHave = having[id];
+        const doneHave = doneAmuletHave(entry, isFullCopies);
+        const build = AmuletBuild[entry.Build];
+        const entryMats = {};
+        if (currHave) {
+            for (let bi of Object.keys(doneHave.b)) {
+                if (doneHave.b[bi] <= currHave.b[bi]) { continue; }
+                for (const bs of build[bi].slice(currHave.b[bi] ? currHave.b[bi] : 0, doneHave.b[bi])) {
+                    totalCost += bs.Cost;
+                    for (let m of Object.keys(bs.Mats)) {
+                        if (!entryMats[m]) { entryMats[m] = 0; }
+                        entryMats[m] += bs.Mats[m];
+                    }
+                }
+            }
+            const currLevelMats = AmuletLevel[entry.Rarity][currHave.b[1] || 0].Mats;
+            const doneLevelMats = AmuletLevel[entry.Rarity][doneHave.b[1] || 0].Mats;
+            for (let m of Object.keys(doneLevelMats)) {
+                if (currLevelMats[m]) {
+                    const diff = doneLevelMats[m] - currLevelMats[m];
+                    if (diff > 0){
+                        entryMats[m] = diff;
+                    }
+                } else {
+                    entryMats[m] = doneLevelMats[m];
+                }
+            }
+        } else {
+            totalCost += entry.Cost;
+            for (let bi of Object.keys(doneHave.b)) {
+                for (const bs of build[bi].slice(0, doneHave.b[bi])) {
+                    totalCost += bs.Cost;
+                    for (let m of Object.keys(bs.Mats)) {
+                        if (!entryMats[m]) { entryMats[m] = 0; }
+                        entryMats[m] += bs.Mats[m];
+                    }
+                }
+            }
+            const doneLevelMats = AmuletLevel[entry.Rarity][doneHave.b[1] || 0].Mats;
+            for (let m of Object.keys(doneLevelMats)) {
+                if (!entryMats[m]) { entryMats[m] = 0; }
+                entryMats[m] += doneLevelMats[m];
+            }
+        }
+        for (let m of Object.keys(entryMats)){
+            const tm = (m === "UNIQUE") ? entry.UniqueMaterial : m;
+            if (!totalMats[tm]) { totalMats[tm] = 0; }
+            totalMats[tm] += entryMats[m];
+        }
+    }
+    const sorted = Object.keys(totalMats).sort((a, b) => (Material[a].SortId - Material[b].SortId));
+
+    return (
+        <Grid item>
+            <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
+            <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
+                <DialogContent className={clsx(classes.costTitle)}>
+                    <img style={{ verticalAlign: 'middle', width: 30 }} src={`${process.env.PUBLIC_URL}/ui/eldwater.png`} alt="cost" />
+                    <Typography display="inline" gutterBottom>   {totalCost.toLocaleString()}</Typography>
+                    <Button
+                        onClick={toggleFullCopies}
+                        name="fullCopies"
+                        variant="outlined"
+                        className={clsx(classes.fullToggle)}
+                    >{fullCopies}</Button>
+                </DialogContent>
+                <DialogContent dividers>
+                    <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">
+                        {sorted.map((m) => (
+                            <MaterialSummaryItem
+                                key={m}
+                                m={m}
+                                count={totalMats[m]}
+                                name={Material[m][`Name${locale}`]}
+                            />
+                        ))}
+                    </Grid>
+                </DialogContent>
+            </Dialog>
+        </Grid>
+    )
+}
+
+
+
 function ListingControls(props) {
     const {
         locale, minRarity, maxRarity,
@@ -249,8 +385,8 @@ function ListingControls(props) {
         order, toggleOrder,
         majorityHaving, toggleAllHaving,
         addFilter, removeFilter, filters, radioFilters,
-        availabilities, series, havingWeapon, havingFort,
-        visible, isGacha, isFort
+        availabilities, series,
+        storeKey, having, visible
     } = props;
     const classes = useStyles();
 
@@ -262,8 +398,18 @@ function ListingControls(props) {
     const radioFilterValues = {
         'Element': ELEMENTS,
         'Weapon': WEAPONS,
-        // eslint-disable-next-line
-        'Rarity': Object.keys(RARITIES).filter(r => (r == 0 || (r >= minRarity && r <= maxRarity))).reduce((res, key) => { res[key] = RARITIES[key]; return res; }, {})
+        "Form": FORMS,
+        "Union": [...Array(12).keys()].reduce((res, union) => {
+            res[union] = unionIcon(union);
+            return res;
+        }, {}),
+    }
+    if (minRarity && maxRarity) {
+        radioFilterValues["Rarity"] = [...Array((maxRarity+1)-minRarity).keys()].reduce((res, offset) => {
+            const rarity = minRarity+offset;
+            res[rarity] = `${rarity}_Star`;
+            return res;
+        }, {0: '0_Star'})
     }
     const handleRadioFilter = (e) => {
         if (e.target.value === "0") { removeFilter(e.target.name); }
@@ -320,12 +466,12 @@ function ListingControls(props) {
                     </FormControl>
                     <IconButton onClick={toggleOrder} size="small">{order === 'ASC' ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}</IconButton>
                 </Grid>
-                {isGacha && <Grid item>
+                {(storeKey === 'chara' || storeKey === 'dragon') && <Grid item>
                     <FormControlLabel control={<Checkbox checked={filters.ifHave} name="ifHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].HAVE} />
                     <FormControlLabel control={<Checkbox checked={filters.ifNotHave} name="ifNotHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].NOT_HAVE} />
                     <FormControlLabel control={<Checkbox checked={filters.ifMaxed} name="ifMaxed" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].MAXED} />
                 </Grid>}
-                {isFort && <Grid item>
+                {(storeKey === 'fort') && <Grid item>
                     <FormControlLabel control={<Checkbox checked={filters.ifNotMaxLevel} name="ifNotMaxLevel" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].NOT_MAXED} />
                 </Grid>}
                 {radioFilters.map((rf) => (
@@ -385,8 +531,9 @@ function ListingControls(props) {
                         </Popover>
                     </Grid>
                 )}
-                {havingWeapon && (<WeaponMaterialSummation locale={locale} having={havingWeapon} visible={visible} />)}
-                {havingFort && (<FortMaterialSummation locale={locale} having={havingFort} visible={visible} />)}
+                {(storeKey === 'amulet') && (<AmuletMaterialSummation locale={locale} having={having} visible={visible} />)}
+                {(storeKey === 'weapon') && (<WeaponMaterialSummation locale={locale} having={having} visible={visible} />)}
+                {(storeKey === 'fort') && (<FortMaterialSummation locale={locale} having={having} visible={visible} />)}
             </Grid>
         </AppBar >
     )

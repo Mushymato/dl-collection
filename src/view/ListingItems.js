@@ -24,10 +24,16 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AddIcon from '@material-ui/icons/Add';
 
 import TextLabel from '../data/locale.json';
+
 import Weapon from '../data/weapon.json';
 import WeaponSeries from '../data/weaponseries.json';
 import WeaponBuild from '../data/weaponbuild.json';
-import { ELEMENTS, ELEMENT_BG_COLORS, ELEMENT_FG_COLORS, DEFAULT_HAVE, WEAPON_LEVELS } from '../data/Mapping';
+import WeaponLevel from '../data/weaponlevel.json'
+
+import AmuletBuild from '../data/amuletbuild.json';
+import AmuletLevel from '../data/amuletlevel.json';
+
+import { ELEMENTS, ELEMENT_BG_COLORS, ELEMENT_FG_COLORS, DEFAULT_HAVE, unionIcon } from '../data/Mapping';
 
 const useStyles = makeStyles({
     root: {
@@ -94,6 +100,24 @@ const useStyles = makeStyles({
         height: 48,
         visibility: 'visible'
     },
+    unionIcon: {
+        "& img": {
+            width: 24,
+        },
+        position: 'absolute',
+        top: 7,
+        left: 48,
+        zIndex: 1
+    },
+    amuletAbIcon: {
+        "& img": {
+            width: 24,
+        },
+        position: 'absolute',
+        top: 6,
+        left: 28,
+        zIndex: 2
+    },
     mcIcon: {
         backgroundImage: `url("${process.env.PUBLIC_URL}/ui/mc.png")`,
         backgroundRepeat: 'no-repeat',
@@ -110,10 +134,14 @@ const useStyles = makeStyles({
         // '-webkit-text-stroke': '1px black',
         position: 'absolute',
         top: 45,
-        left: 4
+        left: 3,
+        zIndex: 2
     },
     mcIconMaxed: {
         color: '#ffcc00'
+    },
+    mcIconAmulet: {
+        top: 25,
     },
     circleIcon: {
         backgroundColor: 'gray',
@@ -341,12 +369,7 @@ export function standardCardIcon(category, id, count) {
     return `${process.env.PUBLIC_URL}/${category}/${id}.png`
 }
 
-export function amuletCardIcon(category, id, count) {
-    if (count > 3) { return `${process.env.PUBLIC_URL}/${category}/${id}_02.png`; }
-    else { return `${process.env.PUBLIC_URL}/${category}/${id}_01.png`; }
-}
-
-export function UnbindableListingItem(props) {
+export function DragonListingItem(props) {
     const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
     const cardIconFn = props.cardIconFn || standardCardIcon;
     const classes = useStyles();
@@ -423,7 +446,7 @@ const fullWeaponHave = (entry) => {
     return have;
 }
 
-export const doneWeaponHave = (entry, isFullAgito) => {
+export const doneWeaponHave = (entry, fullWeapon) => {
     const build = WeaponBuild[entry.Build];
     if (build[5]) {
         const unbindReq = Math.max(build[5].map((b) => b.UnbindReq));
@@ -437,7 +460,7 @@ export const doneWeaponHave = (entry, isFullAgito) => {
         if (build[2]) {
             have.b[2] = Math.floor(Math.max(0, unbindReq - 1) / 4);
         }
-        if (entry.Series === 4 && isFullAgito) {
+        if (fullWeapon) {
             have.b[1] = build[1].length;
             have.b[2] = build[2].length;
             have.b[3] = build[3].length;
@@ -493,7 +516,7 @@ export function WeaponListingItem(props) {
     }
     const lcHaving = (e) => {
         if (have) {
-            const doneHave = doneWeaponHave(entry);
+            const doneHave = doneWeaponHave(entry, have.b[1] === 5);
             for (let bi of Object.keys(have.b)) {
                 doneHave.b[bi] = Math.max(have.b[bi], doneHave.b[bi] || 0);
             }
@@ -586,6 +609,11 @@ export function WeaponListingItem(props) {
         }
     }
 
+    let levelData = { Level: 0, Mats: {} };
+    if (have) {
+        levelData = WeaponLevel[entry.Rarity][have.b[1] || 0];
+    }
+
     return (<Grid item>
         <Card className={clsx(classes.root, have && (classes[ELEMENTS[entry.Element]] || classes.Null))}>
             <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
@@ -594,7 +622,7 @@ export function WeaponListingItem(props) {
                     image={cardIconUrl}
                     title={cardName} alt={cardName} >
                     {have && (<Box className={clsx(classes.mcIcon, have.b[5] && classes.mcIconMaxed)}>
-                        {WEAPON_LEVELS[entry.Rarity][have.b[1] || 0]}
+                        {levelData.Level}
                     </Box>)}
                 </CardMedia>
             </CardActionArea>
@@ -811,6 +839,167 @@ export function FortListingItem(props) {
                     )
                 })}
             </DialogContent>
+        </Dialog>
+    </Grid >)
+}
+
+const fullAmuletHave = (entry) => {
+    const build = AmuletBuild[entry.Build];
+    const have = {};
+    if (build) {
+        have.b = {};
+        for (let i of Object.keys(build)) {
+            have.b[i] = build[i].length;
+        }
+        have.b[6] += 1;
+    }
+    return have;
+}
+
+export const doneAmuletHave = (entry, fullCopies) => {
+    const doneHave = fullAmuletHave(entry);
+    if (!fullCopies) {
+        doneHave.b[6] = 1;
+    }
+    return doneHave;
+}
+
+export function AmuletListingItem(props) {
+    const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
+    const classes = useStyles();
+    const cardName = entry[`Name${locale}`];
+    let cardIconUrl = null;
+    if ((!entry.NoRefine) && have && have.b[1] && have.b[1] >= 2) {
+        cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.BaseId}_02.png`;
+    } else {
+        cardIconUrl = `${process.env.PUBLIC_URL}/${category}/${entry.BaseId}_01.png`;
+    }
+
+    const [open, setOpen] = React.useState(false);
+    const handleOpen = () => { setOpen(true); };
+    const handleClose = () => { setOpen(false); };
+
+    const build = AmuletBuild[entry.Build];
+
+    const createThisHaving = (newHave) => {
+        updateHaving(id, newHave || { b: { 6: 1 } });
+    }
+    const lcHaving = (e) => {
+        if (have) {
+            const doneHave = doneAmuletHave(entry, have.b[6] < (build[6].length+1));
+            for (let bi of Object.keys(have.b)) {
+                doneHave.b[bi] = Math.max(have.b[bi], doneHave.b[bi] || 0);
+            }
+            updateHaving(id, doneHave);
+        } else {
+            createThisHaving();
+        }
+    }
+    const deleteThisHaving = () => {
+        if (have) {
+            deleteHaving(id);
+        }
+    }
+    const rcHaving = (e) => {
+        deleteThisHaving();
+        e.preventDefault();
+    }
+    const handleDialogCheck = (e) => {
+        if (e.target.checked) {
+            createThisHaving();
+        } else {
+            deleteThisHaving();
+        }
+    }
+    const setBuildValues = (piece, value, have) => {
+        have.b[piece] = value;
+        // const unbindReq = build[piece][value - 1] ? build[piece][value - 1].UnbindReq : 0;
+        // have.b[1] = Math.max(have.b[1] || 0, unbindReq);
+        return have;
+    }
+    const makeBuildChange = (piece) => {
+        return (e, value) => {
+            if (have) {
+                if (piece === '6' && value === 0) {
+                    deleteThisHaving();
+                } else {
+                    updateHaving(id, setBuildValues(piece, value, have));
+                }
+            } else {
+                const newHave = { b: { 6: 1 } };
+                createThisHaving(setBuildValues(piece, value, newHave));
+            }
+        }
+    }
+
+    let levelData = { Level: 0, Mats: {} };
+    if (have) {
+        levelData = AmuletLevel[entry.Rarity][have.b[1] || 0];
+    }
+
+    return (<Grid item>
+        <Card className={clsx(classes.root, have && (classes[ELEMENTS[entry.Element]] || classes.Null))}>
+            <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
+                <CardMedia
+                    className={clsx(classes.cardIcon)}
+                    image={cardIconUrl}
+                    title={cardName} alt={cardName} >
+                    {have && (
+                        <Box className={clsx(classes.mcIconAmulet, classes.mcIcon, have.b[1] === 4 && have.b[6] === 4 && classes.mcIconMaxed)}>
+                        {levelData.Level}</Box>
+                    )}
+                    <Box className={clsx(classes.amuletAbIcon)}><img alt={entry.AbIcon} src={`${process.env.PUBLIC_URL}/ability/${entry.AbIcon}.png`}/></Box>
+                    {entry.Union && (<Box className={clsx(classes.unionIcon)}><img alt={`Union_${entry.Union}`} src={`${process.env.PUBLIC_URL}/ui/${unionIcon(entry.Union)}.png`}/></Box>)}
+                </CardMedia>
+            </CardActionArea>
+            <CardContent className={clsx(classes.cardName)}>
+                <Button
+                    className={clsx(classes.cardNameText, locale !== 'EN' && classes.cardNameNoWrap)}
+                    size="small"
+                    onClick={handleOpen}
+                    endIcon={<AddIcon />}>
+                    {insertLinebreak(cardName, locale)}
+                </Button>
+            </CardContent>
+        </Card>
+        <Dialog onClose={handleClose} aria-labelledby={`${category}-${id}-dialog`} open={open}>
+            <DialogTitle id={`${category}-${id}-dialog`} onClose={handleClose}>
+                <FormControlLabel
+                    control={<Checkbox name={`${id}-create`}
+                        checked={!!(have)}
+                        onClick={handleDialogCheck}
+                        color="default"
+                        icon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon, classes.grayscale)} />}
+                        checkedIcon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon)} />} />}
+                    label={<Box><Typography>{cardName}</Typography></Box>}
+                />
+            </DialogTitle>
+            {build && (<DialogContent dividers>
+                {Object.keys(build).map((piece) => {
+                    const buildInfo = build[piece];
+                    const buildpiece = TextLabel[locale][`BUILDUP_${piece}`];
+                    const buildvalue = (have && have.b) ? (have.b[piece] || 0) : 0;
+                    return (
+                        <Box key={piece}>
+                            <Typography id="build-slider" gutterBottom>
+                                {buildpiece + ' - ' + buildvalue}
+                            </Typography>
+                            <Slider
+                                name={`${id}-build-${piece}`}
+                                aria-labelledby="build-slider"
+                                valueLabelDisplay="auto"
+                                value={buildvalue}
+                                onChange={makeBuildChange(piece)}
+                                step={1}
+                                marks
+                                min={0}
+                                max={piece === '6' ? 4 : buildInfo.length}
+                                classes={{ colorPrimary: classes.FgNull }}
+                            />
+                        </Box>
+                    )
+                })}
+            </DialogContent>)}
         </Dialog>
     </Grid >)
 }

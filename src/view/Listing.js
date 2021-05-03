@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import ListingControls from './ListingControls';
 import { DEFAULT_HAVE } from '../data/Mapping';
 import TextLabel from '../data/locale.json';
-import { doneWeaponHave, fortMaxNum } from './ListingItems';
+import { doneWeaponHave, doneAmuletHave, fortMaxNum } from './ListingItems';
 import WeaponBuild from '../data/weaponbuild.json';
 
 const weaponSeriesSortOrder = {
@@ -26,7 +26,8 @@ const SortMethods = {
     byWeapon: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity)),
     byRarity: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
     bySeries: (entries) => Object.keys(entries).sort((a, b) => (weaponSeriesSortOrder[entries[a].Series] - weaponSeriesSortOrder[entries[b].Series] || entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
-    byType: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b))
+    byType: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b)),
+    byForm: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Form - entries[b].Form || entries[a].Rarity - entries[b].Rarity || a - b)),
 }
 
 const CheckFilterMethods = {
@@ -162,6 +163,8 @@ function Listing(props) {
             for (const id of visibleEntries) {
                 if (storeKey === 'weapon') {
                     newHaving[id] = doneWeaponHave(entries[id]);
+                } else if (storeKey === 'amulet'){
+                    newHaving[id] = doneAmuletHave(entries[id]);
                 } else if (storeKey === 'fort') {
                     newHaving[id] = (new Array(fortMaxNum(entries[id]))).fill(entries[id].Detail.length);
                 } else {
@@ -211,11 +214,9 @@ function Listing(props) {
                 radioFilters={radioFilters}
                 availabilities={availabilities}
                 series={series}
-                havingWeapon={storeKey === 'weapon' && having}
-                havingFort={storeKey === 'fort' && having}
+                storeKey={storeKey}
+                having={having}
                 visible={visibleEntries}
-                isGacha={storeKey === 'chara' || storeKey === 'dragon'}
-                isFort={storeKey === 'fort'}
             />
             <Typography component="h2" gutterBottom>{statLabel(TextLabel[locale].COMPLETION)}</Typography>
             <Grid container spacing={1} alignItems="flex-start" justify="flex-start">

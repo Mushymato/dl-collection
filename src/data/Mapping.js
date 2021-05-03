@@ -20,14 +20,11 @@ export const ELEMENTS = {
     5: 'Shadow'
 }
 
-export const RARITIES = {
-    0: '0_Star',
-    1: '1_Star',
-    2: '2_Star',
-    3: '3_Star',
-    4: '4_Star',
-    5: '5_Star',
-    6: '6_Star',
+export const FORMS = {
+    0: 'Form0',
+    2: 'FormB',
+    1: 'FormA',
+    3: 'FormC',
 }
 
 export const ELEMENT_BG_COLORS = {
@@ -58,27 +55,7 @@ export const DEFAULT_HAVE = {
         3: { c: 5 },
         4: { c: 5 },
         5: { c: 1 }
-    },
-    amulet: {
-        2: { c: 5 },
-        3: { c: 5 },
-        4: { c: 5 },
-        5: { c: 5 },
-        6: { c: 5 },
-    },
-    weapon: {
-        2: { b: { 6: 1 } },
-        3: { b: { 6: 1 } },
-        4: { b: { 6: 1 } },
-        5: { b: { 6: 1 } },
-        6: { b: { 6: 1 } }
     }
 }
 
-export const WEAPON_LEVELS = {
-    2: [6, 7, 8, 9, 10],
-    3: [12, 14, 16, 18, 20],
-    4: [18, 21, 24, 27, 30],
-    5: [30, 35, 40, 45, 50, 55, 60, 65, 70],
-    6: [40, 45, 50, 55, 60, 65, 70, 75, 80, 90]
-}
+export const unionIcon = (union) => (`Icon_Union_${union.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/styles';
+
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -18,12 +19,17 @@ import Typography from '@material-ui/core/Typography';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Tooltip from '@material-ui/core/Tooltip';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AddIcon from '@material-ui/icons/Add';
 
 import TextLabel from '../data/locale.json';
+
+import ManaCircle from '../data/manacircle.json';
+import CharaLimitBreak from '../data/charalimitbreak.json';
 
 import Weapon from '../data/weapon.json';
 import WeaponSeries from '../data/weaponseries.json';
@@ -219,6 +225,36 @@ const useStyles = makeStyles({
     grayscale: {
         filter: 'grayscale(100%)'
     },
+    // mcGrid: {
+    //     display: 'grid',
+    //     gridTemplateColumns: 'repeat(6, 1fr)',
+    // },
+    // mcGridGap: {
+    //     marginBottom: 20
+    // },
+    // mcGridDiv: {
+    //     gridColumnStart: 1,
+    //     gridColumnEnd: 7,
+    //     marginTop: 5,
+    //     marginBottom: 5,
+    //     height: 1,
+    //     backgroundColor: 'black',
+    // },
+    mcTab: {
+        minWidth: 20,
+    },
+    mcTabpanel: {
+        display: 'grid',
+        margin: '0 auto',
+        gridTemplateColumns: 'repeat(5, 1fr)',
+        gridAutoFlow: 'dense',
+        textAlign: 'center',
+        width: 'fit-content',
+    },
+    mcTabUb: {
+        gridColumnStart: 1,
+        gridColumnEnd: 6,
+    },
     Flame: { backgroundColor: ELEMENT_BG_COLORS.Flame },
     Water: { backgroundColor: ELEMENT_BG_COLORS.Water },
     Wind: { backgroundColor: ELEMENT_BG_COLORS.Wind },
@@ -276,93 +312,318 @@ function BaseListingItem(props) {
     );
 }
 
+export const doneCharaHave = (entry, unbind) => {
+    if (!unbind || unbind < 2) {
+        return {
+            ub: (entry.Rarity === 3) ? 2 : 3,
+            no: Array.from({ length: 10 }, (_, i) => i + 1)
+        }
+    }
+    if (unbind < 4) {
+        return {
+            ub: 4,
+            no: Array.from({ length: 10 }, (_, i) => i + 1)
+        }
+    }
+    return {
+        ub: entry.MaxLimitBreak,
+        no: (entry.MaxLimitBreak === 5) ? Array.from({ length: 20 }, (_, i) => i + 1) : Array.from({ length: 10 }, (_, i) => i + 1)
+    }
+}
+
+const MC_STATIC = {
+    10101: 'Mc_StatusUp_Hp',
+    10102: 'Mc_StatusUp_Atk',
+    10103: 'Mc_StatusUp_HpAtk',
+    10601: 'Mc_Material_Get',
+    10602: 'Mc_Material_Get',
+    10701: 'Mc_Advanced_Training',
+    10801: 'Mc_Unbind_Level',
+}
+const MC_PIECE_NAME = {
+    10101: '+Hp',
+    10102: '+Atk',
+    10103: '+Hp/Atk',
+    10201: 'FS Lv.',
+    10301: 'A1 Lv.',
+    10302: 'A2 Lv.',
+    10303: 'A3 Lv.',
+    10401: 'S1 Lv.',
+    10402: 'S2 Lv.',
+    10501: 'Ex Lv.',
+    10601: 'Item',
+    10701: 'Combo',
+    10801: '+Max Lv.'
+}
+const MCPieceIcon = (entry, mcItem) => {
+    const piece = mcItem.Piece;
+    const icon = { img: null, txt: MC_PIECE_NAME[piece] };
+    if (MC_STATIC[piece]) {
+        icon.img = `${process.env.PUBLIC_URL}/manacircle/${MC_STATIC[piece]}.png`;
+    } else if (piece === 10501) {
+        // exability
+        icon.img = `${process.env.PUBLIC_URL}/ability/${entry.ExAbility}.png`;
+        icon.txt += mcItem.Step;
+    } else if (piece === 10201) {
+        // FS
+        const step = mcItem.Step + entry.DefaultLv.FS;
+        if (step === 2) {
+            icon.img = `${process.env.PUBLIC_URL}/manacircle/Mc_Burstattack_Upgrade.png`;
+        } else {
+            icon.img = `${process.env.PUBLIC_URL}/manacircle/Mc_Burstattack_Get.png`;
+        }
+
+        icon.txt += step;
+    } else if (piece >= 10301 && piece <= 10303) {
+        // Abilities
+        const abi = piece - 10300;
+        const step = mcItem.Step + entry.DefaultLv.Abilities[abi];
+        icon.img = `${process.env.PUBLIC_URL}/ability/${entry.Abilities[abi][step]}.png`;
+        icon.txt += step;
+    } else if (piece >= 10401 && piece <= 10402) {
+        // Skills
+        const si = piece - 10400;
+        const step = (si === 1) ? mcItem.Step + 1 : mcItem.Step;
+        icon.img = `${process.env.PUBLIC_URL}/skill/${entry.Skills[si][step]}.png`;
+        icon.txt += step;
+    }
+    // Story override
+    if (mcItem.Story) {
+        icon.img = `${process.env.PUBLIC_URL}/manacircle/Mc_CharaStory.png`;
+    }
+    return icon;
+}
+// 51 52 53 54 55   00 01 02 03 04
+// 60 59 58 57 56   05 06 07 08 09
+// 61 62 63 64 65   10 11 12 13 14
+// 70 69 68 67 66   15 16 17 18 19
+// 
+const mapMCRange = (i, start) => {
+    return (start + ((Math.floor(i / 5) % 2 === 0) ? (i + 1) : (Math.floor(i / 5) * 10 + 5 - i)));
+}
 export function CharaListingItem(props) {
-    const { locale, id, entry, have, updateHaving, deleteHaving } = props;
+    const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
     const classes = useStyles();
+    const cardName = entry[`Name${locale}`];
 
-    const [editing, setEditing] = useState(false);
-    const toggleEditing = (e) => { setEditing(!editing); }
+    const [open, setOpen] = React.useState(false);
+    const handleOpen = () => { setOpen(true); };
+    const handleClose = () => { setOpen(false); };
 
-    const maxLevel = entry.Spiral ? 100 : 80;
-    const lv = have ? have.lv : '';
-    const validateLv = (e) => {
-        const level = parseInt(e.target.value);
-        let nextLevel = level;
-        if (isNaN(level) || level < 1) { nextLevel = ''; }
-        else if (level > maxLevel) { nextLevel = maxLevel; }
-        if (nextLevel) {
-            if (have) { updateHaving(id, { lv: nextLevel }); }
-            else { updateHaving(id, { lv: nextLevel, mc: 1 }); }
-        } else { deleteHaving(id); }
-        updateRarity();
+    const mcInfo = ManaCircle[entry.MCName];
+
+    if (have && !have.no) {
+        deleteHaving(id);
     }
 
-    const maxManaCircle = entry.Spiral ? 70 : 50;
-    const mc = have ? have.mc : '';
-    const validateMc = (e) => {
-        const manaCircle = parseInt(e.target.value);
-        let nextMc = manaCircle;
-        if (isNaN(manaCircle) || manaCircle < 1) { nextMc = ''; }
-        else if (manaCircle > maxManaCircle) { nextMc = maxManaCircle; }
-        if (nextMc) {
-            if (have) { updateHaving(id, { mc: nextMc }); }
-            else { updateHaving(id, { lv: 1, mc: nextMc }); }
-            updateHaving(id, { mc: nextMc });
-        } else { deleteHaving(id); }
-        updateRarity();
+    const createThisHaving = () => {
+        updateHaving(id, doneCharaHave(entry));
     }
-
-    const minRarity = entry.Rarity;
-    const [rarity, setRarity] = useState(entry.Rarity);
-    const updateRarity = () => {
-        if (minRarity === 5) { return; }
-        if (minRarity < 5 && (lv > 70 || mc > 40)) { setRarity(5); return; }
-        if (minRarity < 4 && (lv > 60 || mc > 30)) { setRarity(4); return; }
-        setRarity(minRarity);
-    }
-
-    const setMaxHave = () => {
-        setRarity(5);
-        const nextHave = { lv: maxLevel, mc: maxManaCircle };
-        updateHaving(id, nextHave);
-    }
-
-    const setDefaultHave = () => {
-        setRarity(minRarity);
-        const nextHave = DEFAULT_HAVE.chara[minRarity];
-        updateHaving(id, nextHave);
-    }
-
     const lcHaving = (e) => {
-        if (!have || (have.lv === maxLevel && have.mc === maxManaCircle)) { setDefaultHave(); }
-        else { setMaxHave(); }
+        if (have) {
+            updateHaving(id, doneCharaHave(entry, have.ub));
+        } else {
+            createThisHaving();
+        }
+    }
+    const deleteThisHaving = () => {
+        if (have) {
+            deleteHaving(id);
+        }
     }
     const rcHaving = (e) => {
-        if (have) { setRarity(minRarity); deleteHaving(id); }
+        deleteThisHaving();
         e.preventDefault();
     }
+    const handleDialogCheck = (e) => {
+        if (e.target.checked) {
+            updateHaving(id, doneCharaHave(entry, 5));
+        } else {
+            deleteThisHaving();
+        }
+    }
 
-    const CardIconDeco = () => (
-        <React.Fragment>
-            {(!editing && have ? (have.mc > 0) : false) &&
-                <Box className={clsx(classes.mcIcon, have.mc === maxManaCircle && classes.mcIconMaxed)}>{mc}</Box>
+    const mcNum = (have) ? have.ub * 10 + have.no.length : 0;
+    const maxManaCircle = (entry.MaxLimitBreak === 5) ? 70 : 50;
+    const rarity = (have) ? Math.max(entry.Rarity, Math.min(5, have.ub + 1)) : entry.Rarity;
+    const cardIconUrl = `${process.env.PUBLIC_URL}/chara/${id}_r0${rarity}.png`;
+
+    const mcRanges = [];
+    if (entry.MaxLimitBreak === 5) {
+        mcRanges.push(Array.from({ length: 20 }, (_, i) => mapMCRange(i, 50)));
+    }
+    for (let ub = 4; ub >= 0; ub -= 1) {
+        mcRanges.push(Array.from({ length: 10 }, (_, i) => mapMCRange(i, ub * 10)));
+    }
+
+    const [mcIdx, setMcIdx] = useState(0);
+    const handleTabs = (e, newMcIdx) => {
+        setMcIdx(newMcIdx);
+    };
+
+    const handleMCCheck = (e) => {
+        const seq = parseInt(e.target.name.split('-').slice(-1));
+        const mcItem = mcInfo[seq];
+        if (have) {
+            let newUb = mcItem.Hierarchy - 1;
+            let newNo = null;
+            if (have.ub < newUb) {
+                if (newUb === 5) {
+                    newNo = Array.from({ length: mcItem.No }, (_, i) => i + 1);
+                } else {
+                    newNo = [mcItem.No];
+                }
+            } else if (have.ub === newUb) {
+                if (newUb === 5) {
+                    newNo = Array.from({ length: mcItem.No }, (_, i) => i + 1);
+                } else {
+                    newNo = [...have.no];
+                    const index = newNo.indexOf(mcItem.No);
+                    if (index > -1) {
+                        newNo.splice(index, 1);
+                    } else {
+                        newNo.push(mcItem.No);
+                    }
+                }
+            } else if (have.ub > newUb) {
+                if (newUb === 5) {
+                    newNo = Array.from({ length: (mcItem.No - 1) }, (_, i) => i + 1);
+                } else {
+                    newNo = Array.from({ length: 9 }, (_, i) => (i + 1 >= mcItem.No) ? i + 2 : i + 1);
+                }
             }
-        </React.Fragment>
-    );
+            updateHaving(id, { ub: newUb, no: newNo });
+        } else {
+            updateHaving(id, {
+                ub: mcItem.Hierarchy - 1,
+                no: mcItem.Hierarchy < 6 ? [mcItem.No] : Array.from({ length: mcItem.No }, (_, i) => i + 1)
+            });
+        }
+    };
+    const getMCChecked = (seq) => {
+        if (!have) { return false; }
+        const mcItem = mcInfo[seq];
+        return (have.ub > mcItem.Hierarchy - 1) || (have.ub === mcItem.Hierarchy - 1 && have.no.includes(mcItem.No));
+    }
 
-    return (<BaseListingItem
-        locale={locale}
-        entry={entry}
-        have={have}
-        lcHaving={lcHaving}
-        rcHaving={rcHaving}
-        editing={editing}
-        toggleEditing={toggleEditing}
-        cardIconUrl={`${process.env.PUBLIC_URL}/chara/${id}_r0${rarity}.png`}
-        CardIconDeco={CardIconDeco}>
-        <TextField label="Lv" value={lv} onInput={validateLv.bind(this)} />
-        <TextField label="MC" value={mc} onInput={validateMc.bind(this)} />
-    </BaseListingItem>)
+    const handleUbCheck = (e) => {
+        const ubSeq = parseInt(e.target.name.split('-').slice(-1));
+        if (have && have.ub === ubSeq) {
+            updateHaving(id, { ub: ubSeq - 1, no: Array.from({ length: 10 }, (_, i) => i + 1) });
+        } else {
+            updateHaving(id, { ub: ubSeq, no: [] });
+        }
+    }
+    const getUbChecked = (ubSeq) => {
+        if (!have) { return false; }
+        return have.ub >= ubSeq;
+    }
+
+    return (<Grid item>
+        <Card className={clsx(classes.root, have && (classes[ELEMENTS[entry.Element]] || classes.Null))}>
+            <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
+                <CardMedia
+                    className={clsx(classes.cardIcon)}
+                    image={cardIconUrl}
+                    title={cardName} alt={cardName} >
+                    {(mcNum > 0) && (
+                        <Box className={clsx(classes.mcIcon, mcNum === maxManaCircle && classes.mcIconMaxed)}>{mcNum}</Box>
+                    )}
+                </CardMedia>
+            </CardActionArea>
+            <CardContent className={clsx(classes.cardName)}>
+                <Button
+                    className={clsx(classes.cardNameText, locale !== 'EN' && classes.cardNameNoWrap)}
+                    size="small"
+                    onClick={handleOpen}
+                    endIcon={<AddIcon />}>
+                    {insertLinebreak(cardName, locale)}
+                </Button>
+            </CardContent>
+        </Card>
+        <Dialog maxWidth={false} onClose={handleClose} aria-labelledby={`${category}-${id}-dialog`} open={open}>
+            <DialogTitle id={`${category}-${id}-dialog`} onClose={handleClose}>
+                <FormControlLabel
+                    control={<Checkbox name={`${id}-create`}
+                        checked={!!(have)}
+                        onClick={handleDialogCheck}
+                        color="default"
+                        icon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon, classes.grayscale)} />}
+                        checkedIcon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon)} />} />}
+                    label={<Box><Typography>{cardName}</Typography></Box>}
+                />
+            </DialogTitle>
+            <DialogContent dividers>
+                <Tabs
+                    value={mcIdx}
+                    onChange={handleTabs}
+                    indicatorColor="primary"
+                    textColor="primary"
+                    variant="scrollable"
+                    scrollButtons="auto"
+                >
+                    {mcRanges.map((mcRange, floor) => (
+                        <Tab key={floor} classes={{ root: classes.mcTab }} label={`${Math.min(...mcRange)}-${Math.max(...mcRange)}`} id={`mc-tab-${floor}`} aria-controls={`mc-tabpanel-${floor}`} />
+                    ))}
+                </Tabs>
+                {mcRanges.map((mcRange, floor) => (
+                    <Box component="div"
+                        role="tabpanel"
+                        hidden={mcIdx !== floor}
+                        id={`mc-tabpanel-${floor}`}
+                        aria-labelledby={`mc-tab-${floor}`}
+                        value={mcIdx}
+                        index={floor}
+                        key={floor}
+                        dir="ltr"
+                        className={clsx(classes.mcTabpanel)}>
+                        {(mcIdx === floor) && mcRange.map((seq) => {
+                            const mcItem = mcInfo[seq];
+                            const mcIcon = MCPieceIcon(entry, mcItem);
+                            let ubItem = null;
+                            if ([11, 21, 31, 41, 51].includes(seq)) {
+                                const ubSeq = Math.floor(seq / 10);
+                                const ubIcon = (ubSeq === 5) ? `Mc_Unbind_6M_0${entry.Element}` : 'Mc_Unbind_Mana';
+                                ubItem = (
+                                    // <React.Fragment>
+                                    <Box className={clsx(classes.mcTabUb)} >
+                                        <Tooltip title={`Unbind ${ubSeq}`} aria-label={`ub-${ubSeq}`} placement="top" classes={{ popper: clsx(classes.abilityCheckTooltip) }}>
+                                            <Checkbox
+                                                name={`${id}-ub-${ubSeq}`}
+                                                onClick={handleUbCheck}
+                                                color="default"
+                                                classes={{ root: clsx(classes.abilityCheck) }}
+                                                checked={getUbChecked(ubSeq)}
+                                                icon={<img src={`${process.env.PUBLIC_URL}/manacircle/${ubIcon}.png`} alt={`ub-${seq}`} className={clsx(classes.abilityIcon, classes.grayscale)} />}
+                                                checkedIcon={<img src={`${process.env.PUBLIC_URL}/manacircle/${ubIcon}.png`} alt={`ub-${seq}`} className={clsx(classes.abilityIcon)} />}
+                                            />
+                                        </Tooltip>
+                                    </Box>
+                                );
+                            }
+                            const seqMcTxt = `${seq}: ${mcIcon.txt}`;
+                            return (
+                                <React.Fragment key={seq}>
+                                    {ubItem}
+                                    <Tooltip title={seqMcTxt} aria-label={seqMcTxt} placement="top" classes={{ popper: clsx(classes.abilityCheckTooltip) }}>
+                                        <Checkbox
+                                            name={`${id}-mc-${seq}`}
+                                            onClick={handleMCCheck}
+                                            color="default"
+                                            classes={{ root: clsx(classes.abilityCheck) }}
+                                            checked={getMCChecked(seq)}
+                                            icon={<img src={mcIcon.img} alt={`mc-${seq}`} className={clsx(classes.abilityIcon, classes.grayscale)} />}
+                                            checkedIcon={<img src={mcIcon.img} alt={`mc-${seq}`} className={clsx(classes.abilityIcon)} />}
+                                        />
+                                    </Tooltip>
+                                </React.Fragment>
+                            )
+                        })}
+                    </Box>
+                ))}
+            </DialogContent>
+        </Dialog>
+    </Grid >)
 }
 
 export function standardCardIcon(category, id, count) {
@@ -407,7 +668,7 @@ export function DragonListingItem(props) {
         return (
             <Grid container className={classes.unbindIcons} justify="center">
                 {[0, 1, 2, 3].map((i) =>
-                    (<Grid item className={clsx(classes.ubIcon, (r >= 4 ? classes.ubM : (r > i ? classes.ubN : classes.ub0)))} />))}
+                    (<Grid key={i} item className={clsx(classes.ubIcon, (r >= 4 ? classes.ubM : (r > i ? classes.ubN : classes.ub0)))} />))}
                 {count > 5 && <Grid item className={clsx(classes.ubIcon, classes.mubCount)}>{mub}</Grid>}
             </Grid>
         );
@@ -886,7 +1147,7 @@ export function AmuletListingItem(props) {
     }
     const lcHaving = (e) => {
         if (have) {
-            const doneHave = doneAmuletHave(entry, have.b[6] < (build[6].length+1));
+            const doneHave = doneAmuletHave(entry, have.b[6] < (build[6].length + 1));
             for (let bi of Object.keys(have.b)) {
                 doneHave.b[bi] = Math.max(have.b[bi], doneHave.b[bi] || 0);
             }
@@ -946,10 +1207,10 @@ export function AmuletListingItem(props) {
                     title={cardName} alt={cardName} >
                     {have && (
                         <Box className={clsx(classes.mcIconAmulet, classes.mcIcon, have.b[1] === 4 && have.b[6] === 4 && classes.mcIconMaxed)}>
-                        {levelData.Level}</Box>
+                            {levelData.Level}</Box>
                     )}
-                    <Box className={clsx(classes.amuletAbIcon)}><img alt={entry.AbIcon} src={`${process.env.PUBLIC_URL}/ability/${entry.AbIcon}.png`}/></Box>
-                    {entry.Union && (<Box className={clsx(classes.unionIcon)}><img alt={`Union_${entry.Union}`} src={`${process.env.PUBLIC_URL}/ui/${unionIcon(entry.Union)}.png`}/></Box>)}
+                    <Box className={clsx(classes.amuletAbIcon)}><img alt={entry.AbIcon} src={`${process.env.PUBLIC_URL}/ability/${entry.AbIcon}.png`} /></Box>
+                    {entry.Union && (<Box className={clsx(classes.unionIcon)}><img alt={`Union_${entry.Union}`} src={`${process.env.PUBLIC_URL}/ui/${unionIcon(entry.Union)}.png`} /></Box>)}
                 </CardMedia>
             </CardActionArea>
             <CardContent className={clsx(classes.cardName)}>

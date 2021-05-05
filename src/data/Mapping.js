@@ -58,4 +58,4 @@ export const DEFAULT_HAVE = {
     }
 }
 
-export const unionIcon = (union) => (`Icon_Union_${union.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`);
+export const unionIcon = (union) => (`Icon_Union_${union.toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`);

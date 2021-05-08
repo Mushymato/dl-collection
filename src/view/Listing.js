@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import ListingControls from './ListingControls';
 import { DEFAULT_HAVE } from '../data/Mapping';
 import TextLabel from '../data/locale.json';
-import { doneWeaponHave, doneAmuletHave, fortMaxNum } from './ListingItems';
+import { doneWeaponHave, doneAmuletHave, doneCharaHave, fortMaxNum } from './ListingItems';
 import WeaponBuild from '../data/weaponbuild.json';
 
 const weaponSeriesSortOrder = {
@@ -22,8 +22,8 @@ const SortMethods = {
     byNameEN: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameEN.localeCompare(entries[b].NameEN))),
     byNameJP: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameJP.localeCompare(entries[b].NameJP))),
     byNameCN: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameCN.localeCompare(entries[b].NameCN))),
-    byElement: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon || entries[b].Rarity - entries[a].Rarity)),
-    byWeapon: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity)),
+    byElement: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon || entries[b].Rarity - entries[a].Rarity || b.localeCompare(a))),
+    byWeapon: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity || b.localeCompare(a))),
     byRarity: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
     bySeries: (entries) => Object.keys(entries).sort((a, b) => (weaponSeriesSortOrder[entries[a].Series] - weaponSeriesSortOrder[entries[b].Series] || entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
     byType: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b)),
@@ -33,20 +33,6 @@ const SortMethods = {
 const CheckFilterMethods = {
     ifHave: (entry, have) => (have),
     ifNotHave: (entry, have) => (!have),
-    ifMaxed: (entry, have) => {
-        if (have) {
-            if (entry.Series !== undefined) {
-                const doneHave = doneWeaponHave(entry);
-                return Object.keys(doneHave).reduce((acc, cur) => {
-                    if (!acc) { return false; }
-                    if (!have[cur]) { return false; }
-                    return have[cur] >= doneHave[cur];
-                })
-            } else if (entry.Spiral === undefined) { return have.c >= 5; }
-            else { return entry.Spiral ? (have.lv === 100 && have.mc === 70) : have.lv === 80 && have.mc === 50; }
-        }
-        return false;
-    },
     ifNotMaxLevel: (entry, have) => {
         if (have) {
             return entry.Detail.length > Math.min(...Object.values(have));
@@ -167,6 +153,8 @@ function Listing(props) {
                     newHaving[id] = doneAmuletHave(entries[id]);
                 } else if (storeKey === 'fort') {
                     newHaving[id] = (new Array(fortMaxNum(entries[id]))).fill(entries[id].Detail.length);
+                } else if (storeKey === 'chara') {
+                    newHaving[id] = doneCharaHave(entries[id])
                 } else {
                     newHaving[id] = having[id] || DEFAULT_HAVE[storeKey][entries[id].Rarity];
                 }

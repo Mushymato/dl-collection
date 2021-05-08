@@ -27,6 +27,10 @@ import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
 
 import TextLabel from '../data/locale.json';
 
+import Chara from '../data/chara.json';
+import ManaCircle from '../data/manacircle.json';
+import CharaLimitBreak from '../data/charalimitbreak.json';
+
 import Weapon from '../data/weapon.json';
 import WeaponBuild from '../data/weaponbuild.json';
 import WeaponLevel from '../data/weaponlevel.json';
@@ -39,7 +43,7 @@ import Fort from '../data/fort.json';
 import Material from '../data/material.json';
 
 import { ELEMENTS, WEAPONS, FORMS, unionIcon } from '../data/Mapping';
-import { doneWeaponHave, doneAmuletHave, MaterialSummaryItem, fortMaxNum } from './ListingItems';
+import { doneWeaponHave, doneAmuletHave, doneCharaHave, fortMaxNum, MaterialSummaryItem } from './ListingItems';
 
 const useStyles = makeStyles({
     root: {
@@ -80,7 +84,11 @@ const useStyles = makeStyles({
         paddingRight: 10
     },
     costTitle: {
-        minHeight: '2.5em'
+        minHeight: '2.5em',
+        '& img': {
+            width: 30,
+            verticalAlign: 'middle'
+        }
     },
     fullToggle: {
         float: "right",
@@ -136,7 +144,7 @@ function WeaponMaterialSummation(props) {
             for (let m of Object.keys(doneLevelMats)) {
                 if (currLevelMats[m]) {
                     const diff = doneLevelMats[m] - currLevelMats[m];
-                    if (diff > 0){
+                    if (diff > 0) {
                         totalMats[m] = diff;
                     }
                 } else {
@@ -173,7 +181,7 @@ function WeaponMaterialSummation(props) {
             <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
             <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
                 <DialogContent className={clsx(classes.costTitle)}>
-                    <img style={{ verticalAlign: 'middle', width: 30 }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
+                    <img src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
                     <Typography display="inline" gutterBottom>   {totalCost.toLocaleString()}</Typography>
                     <Button
                         onClick={toggleFullAgito}
@@ -243,7 +251,7 @@ function FortMaterialSummation(props) {
             <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
             <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
                 <DialogContent className={clsx(classes.costTitle)}>
-                    <img style={{ verticalAlign: 'middle', width: 30 }} src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
+                    <img src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
                     <Typography display="inline" gutterBottom> {totalCost.toLocaleString()}</Typography>
                     <QueryBuilderIcon style={{ verticalAlign: 'middle', marginLeft: 4 }} />
                     <Typography display="inline" gutterBottom> {totalTime.toLocaleString()}s</Typography>
@@ -313,7 +321,7 @@ function AmuletMaterialSummation(props) {
             for (let m of Object.keys(doneLevelMats)) {
                 if (currLevelMats[m]) {
                     const diff = doneLevelMats[m] - currLevelMats[m];
-                    if (diff > 0){
+                    if (diff > 0) {
                         entryMats[m] = diff;
                     }
                 } else {
@@ -337,8 +345,8 @@ function AmuletMaterialSummation(props) {
                 entryMats[m] += doneLevelMats[m];
             }
         }
-        for (let m of Object.keys(entryMats)){
-            const tm = (m === "UNIQUE") ? entry.UniqueMaterial : m;
+        for (let m of Object.keys(entryMats)) {
+            const tm = entry[m] ? entry[m] : m;
             if (!totalMats[tm]) { totalMats[tm] = 0; }
             totalMats[tm] += entryMats[m];
         }
@@ -350,7 +358,7 @@ function AmuletMaterialSummation(props) {
             <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
             <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
                 <DialogContent className={clsx(classes.costTitle)}>
-                    <img style={{ verticalAlign: 'middle', width: 30 }} src={`${process.env.PUBLIC_URL}/ui/eldwater.png`} alt="cost" />
+                    <img src={`${process.env.PUBLIC_URL}/ui/eldwater.png`} alt="eldwater" />
                     <Typography display="inline" gutterBottom>   {totalCost.toLocaleString()}</Typography>
                     <Button
                         onClick={toggleFullCopies}
@@ -376,6 +384,120 @@ function AmuletMaterialSummation(props) {
     )
 }
 
+
+function CharaMaterialSummation(props) {
+    const { locale, having, visible } = props;
+    const classes = useStyles();
+
+    const [open, setOpen] = React.useState(false);
+
+    const toggleOpen = (open) => (event) => {
+        if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
+        setOpen(open);
+    };
+
+    const totalCosts = {Mana: 0, Eldwater: 0};
+    const totalMats = {};
+    for (let id of visible) {
+        const currHave = having[id];
+        if (currHave && (currHave.no === undefined || currHave.ub === undefined)) { continue; }
+        if (!currHave) { continue; }
+        const entry = Chara[id];
+        const doneHave = doneCharaHave(entry, 5);
+        const mcInfo = ManaCircle[entry.MCName];
+        const clbInfo = CharaLimitBreak[entry.LimitBreak];
+        const entryMats = {};
+        const useGrow = entry.GrowEnd && Date.now() < entry.GrowEnd;
+
+        // unbind mats
+        if (useGrow) { entryMats['Grow'] = 0; }
+        for (let ub = currHave.ub + 1; ub <= doneHave.ub; ub += 1) {
+            if (useGrow && clbInfo[ub].Grow){
+                entryMats['Grow'] += clbInfo[ub].Grow;
+            } else {
+                for (let m of Object.keys(clbInfo[ub].Mats)) {
+                    if (!entryMats[m]) { entryMats[m] = 0; }
+                    entryMats[m] += clbInfo[ub].Mats[m];
+                }
+            }
+        }
+        if (entry.Rarity < 4 && currHave.ub < 3){
+            totalCosts.Eldwater += 2500;
+        }
+        if (entry.Rarity < 5 && currHave.ub < 4){
+            totalCosts.Eldwater += 25000;
+        }
+
+        const calcNodeMats = (n) => {
+            const mcItem = mcInfo[n];
+            if (useGrow && mcItem.Mats.Grow){
+                entryMats['Grow'] += mcItem.Mats.Grow;
+            } else {
+                totalCosts.Mana += mcItem.Mana;
+                for (let m of Object.keys(mcItem.Mats)) {
+                    if (!entryMats[m]) { entryMats[m] = 0; }
+                    entryMats[m] += mcItem.Mats[m];
+                }
+                const mcEle = mcItem.Ele[entry.MCEle];
+                if (mcEle){
+                    totalCosts.Eldwater += mcEle.Eldwater;
+                    for (let m of Object.keys(mcEle.Mats)) {
+                        if (!entryMats[m]) { entryMats[m] = 0; }
+                        entryMats[m] += mcEle.Mats[m];
+                    }    
+                }
+            }
+        }
+        // mc node mats
+        if (currHave.ub === doneHave.ub){
+            for (let n of doneHave.no.filter((n) => !(currHave.no.includes(n)))) {
+                calcNodeMats(n + doneHave.ub * 10);
+            }
+        } else {
+            for (let n of Array.from({ length: (currHave.ub < 5 ? 10 : 20) }, (_, i) => i + 1).filter((n) => !(currHave.no.includes(n)))) {
+                calcNodeMats(n + currHave.ub * 10);
+            }
+            for (let n = (currHave.ub + 1) * 10; n < doneHave.ub * 10; n += 1) {
+                calcNodeMats(n);
+            }
+            for (let n of doneHave.no) {
+                calcNodeMats(n + doneHave.ub * 10);
+            }    
+        }
+
+        for (let m of Object.keys(entryMats)) {
+            const tm = entry[m] ? entry[m] : m;
+            if (!totalMats[tm]) { totalMats[tm] = 0; }
+            totalMats[tm] += entryMats[m];
+        }
+    }
+    const sorted = Object.keys(totalMats).sort((a, b) => (Material[a].SortId - Material[b].SortId));
+
+    return (
+        <Grid item>
+            <Button onClick={toggleOpen(true)} variant="outlined" className={classes.availButton}>{TextLabel[locale].MATS}</Button>
+            <Dialog anchor={'bottom'} open={open} onClose={toggleOpen(false)} maxWidth="lg">
+                <DialogContent className={clsx(classes.costTitle)}>
+                    <Typography display="inline" gutterBottom><img src={`${process.env.PUBLIC_URL}/ui/mana.png`} alt="mana" />   {totalCosts.Mana.toLocaleString()}    <img src={`${process.env.PUBLIC_URL}/ui/eldwater.png`} alt="eldwater" />   {totalCosts.Eldwater.toLocaleString()}</Typography>
+                </DialogContent>
+                <DialogContent dividers>
+                    <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">
+                        {sorted.map((m) => (
+                            <MaterialSummaryItem
+                                key={m}
+                                m={m}
+                                count={totalMats[m]}
+                                name={Material[m][`Name${locale}`]}
+                            />
+                        ))}
+                    </Grid>
+                </DialogContent>
+            </Dialog>
+        </Grid>
+    )
+}
 
 
 function ListingControls(props) {
@@ -405,11 +527,11 @@ function ListingControls(props) {
         }, {}),
     }
     if (minRarity && maxRarity) {
-        radioFilterValues["Rarity"] = [...Array((maxRarity+1)-minRarity).keys()].reduce((res, offset) => {
-            const rarity = minRarity+offset;
+        radioFilterValues["Rarity"] = [...Array((maxRarity + 1) - minRarity).keys()].reduce((res, offset) => {
+            const rarity = minRarity + offset;
             res[rarity] = `${rarity}_Star`;
             return res;
-        }, {0: '0_Star'})
+        }, { 0: '0_Star' })
     }
     const handleRadioFilter = (e) => {
         if (e.target.value === "0") { removeFilter(e.target.name); }
@@ -469,7 +591,6 @@ function ListingControls(props) {
                 {(storeKey === 'chara' || storeKey === 'dragon') && <Grid item>
                     <FormControlLabel control={<Checkbox checked={filters.ifHave} name="ifHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].HAVE} />
                     <FormControlLabel control={<Checkbox checked={filters.ifNotHave} name="ifNotHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].NOT_HAVE} />
-                    <FormControlLabel control={<Checkbox checked={filters.ifMaxed} name="ifMaxed" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].MAXED} />
                 </Grid>}
                 {(storeKey === 'fort') && <Grid item>
                     <FormControlLabel control={<Checkbox checked={filters.ifNotMaxLevel} name="ifNotMaxLevel" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].NOT_MAXED} />
@@ -531,6 +652,7 @@ function ListingControls(props) {
                         </Popover>
                     </Grid>
                 )}
+                {(storeKey === 'chara') && (<CharaMaterialSummation locale={locale} having={having} visible={visible} />)}
                 {(storeKey === 'amulet') && (<AmuletMaterialSummation locale={locale} having={having} visible={visible} />)}
                 {(storeKey === 'weapon') && (<WeaponMaterialSummation locale={locale} having={having} visible={visible} />)}
                 {(storeKey === 'fort') && (<FortMaterialSummation locale={locale} having={having} visible={visible} />)}

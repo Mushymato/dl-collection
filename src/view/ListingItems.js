@@ -29,7 +29,6 @@ import AddIcon from '@material-ui/icons/Add';
 import TextLabel from '../data/locale.json';
 
 import ManaCircle from '../data/manacircle.json';
-import CharaLimitBreak from '../data/charalimitbreak.json';
 
 import Weapon from '../data/weapon.json';
 import WeaponSeries from '../data/weaponseries.json';
@@ -225,21 +224,6 @@ const useStyles = makeStyles({
     grayscale: {
         filter: 'grayscale(100%)'
     },
-    // mcGrid: {
-    //     display: 'grid',
-    //     gridTemplateColumns: 'repeat(6, 1fr)',
-    // },
-    // mcGridGap: {
-    //     marginBottom: 20
-    // },
-    // mcGridDiv: {
-    //     gridColumnStart: 1,
-    //     gridColumnEnd: 7,
-    //     marginTop: 5,
-    //     marginBottom: 5,
-    //     height: 1,
-    //     backgroundColor: 'black',
-    // },
     mcTab: {
         minWidth: 20,
     },
@@ -247,7 +231,6 @@ const useStyles = makeStyles({
         display: 'grid',
         margin: '0 auto',
         gridTemplateColumns: 'repeat(5, 1fr)',
-        gridAutoFlow: 'dense',
         textAlign: 'center',
         width: 'fit-content',
     },
@@ -313,7 +296,13 @@ function BaseListingItem(props) {
 }
 
 export const doneCharaHave = (entry, unbind) => {
-    if (!unbind || unbind < 2) {
+    if (unbind === undefined) {
+        return {
+            ub: 0,
+            no: []
+        }
+    }
+    if (unbind < 2) {
         return {
             ub: (entry.Rarity === 3) ? 2 : 3,
             no: Array.from({ length: 10 }, (_, i) => i + 1)
@@ -393,14 +382,20 @@ const MCPieceIcon = (entry, mcItem) => {
     }
     return icon;
 }
-// 51 52 53 54 55   00 01 02 03 04
-// 60 59 58 57 56   05 06 07 08 09
-// 61 62 63 64 65   10 11 12 13 14
-// 70 69 68 67 66   15 16 17 18 19
-// 
-const mapMCRange = (i, start) => {
-    return (start + ((Math.floor(i / 5) % 2 === 0) ? (i + 1) : (Math.floor(i / 5) * 10 + 5 - i)));
-}
+
+
+// hardcoded for perf
+const MC50_RANGE = [
+    [41, 42, 43, 44, 45, 50, 49, 48, 47, 46],
+    [31, 32, 33, 34, 35, 40, 39, 38, 37, 36],
+    [21, 22, 23, 24, 25, 30, 29, 28, 27, 26],
+    [11, 12, 13, 14, 15, 20, 19, 18, 17, 16],
+    [1, 2, 3, 4, 5, 10, 9, 8, 7, 6],
+];
+const MC70_RANGE = [
+    [51, 52, 53, 54, 55, 60, 59, 58, 57, 56, 61, 62, 63, 64, 65, 70, 69, 68, 67, 66],
+    ...MC50_RANGE
+]
 export function CharaListingItem(props) {
     const { locale, id, entry, category, have, updateHaving, deleteHaving } = props;
     const classes = useStyles();
@@ -412,8 +407,9 @@ export function CharaListingItem(props) {
 
     const mcInfo = ManaCircle[entry.MCName];
 
-    if (have && !have.no) {
-        deleteHaving(id);
+    if (have && (have.no === undefined || have.ub === undefined)) {
+        have.ub = 0;
+        have.no = [];
     }
 
     const createThisHaving = () => {
@@ -437,7 +433,7 @@ export function CharaListingItem(props) {
     }
     const handleDialogCheck = (e) => {
         if (e.target.checked) {
-            updateHaving(id, doneCharaHave(entry, 5));
+            createThisHaving();
         } else {
             deleteThisHaving();
         }
@@ -447,16 +443,9 @@ export function CharaListingItem(props) {
     const maxManaCircle = (entry.MaxLimitBreak === 5) ? 70 : 50;
     const rarity = (have) ? Math.max(entry.Rarity, Math.min(5, have.ub + 1)) : entry.Rarity;
     const cardIconUrl = `${process.env.PUBLIC_URL}/chara/${id}_r0${rarity}.png`;
+    const mcRanges = (entry.MaxLimitBreak === 5) ? MC70_RANGE : MC50_RANGE;
 
-    const mcRanges = [];
-    if (entry.MaxLimitBreak === 5) {
-        mcRanges.push(Array.from({ length: 20 }, (_, i) => mapMCRange(i, 50)));
-    }
-    for (let ub = 4; ub >= 0; ub -= 1) {
-        mcRanges.push(Array.from({ length: 10 }, (_, i) => mapMCRange(i, ub * 10)));
-    }
-
-    const [mcIdx, setMcIdx] = useState(0);
+    const [mcIdx, setMcIdx] = useState(have ? entry.MaxLimitBreak - have.ub : 0);
     const handleTabs = (e, newMcIdx) => {
         setMcIdx(newMcIdx);
     };
@@ -563,7 +552,13 @@ export function CharaListingItem(props) {
                     scrollButtons="auto"
                 >
                     {mcRanges.map((mcRange, floor) => (
-                        <Tab key={floor} classes={{ root: classes.mcTab }} label={`${Math.min(...mcRange)}-${Math.max(...mcRange)}`} id={`mc-tab-${floor}`} aria-controls={`mc-tabpanel-${floor}`} />
+                        <Tab
+                            key={floor}
+                            // className={clsx((have && have.ub > (entry.MaxLimitBreak - floor)) && classes[ELEMENTS[entry.Element]], (have && have.ub > (entry.MaxLimitBreak - floor)) && classes.mcTabFull)}
+                            classes={{ root: classes.mcTab }}
+                            label={`${Math.min(...mcRange)}-${Math.max(...mcRange)}`} id={`mc-tab-${floor}`}
+                            aria-controls={`mc-tabpanel-${floor}`}
+                        />
                     ))}
                 </Tabs>
                 {mcRanges.map((mcRange, floor) => (
@@ -585,7 +580,6 @@ export function CharaListingItem(props) {
                                 const ubSeq = Math.floor(seq / 10);
                                 const ubIcon = (ubSeq === 5) ? `Mc_Unbind_6M_0${entry.Element}` : 'Mc_Unbind_Mana';
                                 ubItem = (
-                                    // <React.Fragment>
                                     <Box className={clsx(classes.mcTabUb)} >
                                         <Tooltip title={`Unbind ${ubSeq}`} aria-label={`ub-${ubSeq}`} placement="top" classes={{ popper: clsx(classes.abilityCheckTooltip) }}>
                                             <Checkbox
@@ -1147,7 +1141,7 @@ export function AmuletListingItem(props) {
     }
     const lcHaving = (e) => {
         if (have) {
-            const doneHave = doneAmuletHave(entry, have.b[6] < (build[6].length + 1));
+            const doneHave = doneAmuletHave(entry, have.b[1] === 4);
             for (let bi of Object.keys(have.b)) {
                 doneHave.b[bi] = Math.max(have.b[bi], doneHave.b[bi] || 0);
             }

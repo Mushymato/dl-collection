@@ -542,8 +542,7 @@ function ListingControls(props) {
         modifyFilter(newFilters);
     }
 
-    // const [maxState, setMaxState] = React.useState(filters.ifMax ? 'MAX' : (filters.ifNotMax ? 'NOT_MAX' : 'ALL'));
-    const [maxedState, setMaxedState] = React.useState('ALL');
+    const [maxedState, setMaxedState] = React.useState(filters.ifMaxed ? 'MAXED' : (filters.ifNotMaxed ? 'NOT_MAXED' : 'ALL'));
     const nextMaxedState = (e) => {
         const newFilters = { ...filters };
         delete newFilters['ifMaxed'];

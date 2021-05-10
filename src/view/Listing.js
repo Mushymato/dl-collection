@@ -29,6 +29,13 @@ const SortMethods = {
     byType: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b)),
     byForm: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Form - entries[b].Form || entries[a].Rarity - entries[b].Rarity || a - b)),
 }
+const compareHaveItem = (valueA, valueB) => {
+    if (Array.isArray(valueA)){
+        // heurstic for maxed manacircles
+        return valueA.length === valueB.length;
+    }
+    return valueA === valueB;
+}
 const ifMaxedEntry = (have, entry, storeKey) => {
     if (!have){ return false; }
     let maxedHave = null;
@@ -49,8 +56,14 @@ const ifMaxedEntry = (have, entry, storeKey) => {
             maxedHave = { c: 5 };
             break;
     }
-    for (const key of Object.keys(maxedHave)) {
-        if (have[key] !== maxedHave[key]){ return false; }
+    if (maxedHave.b){
+        for (const key of Object.keys(maxedHave.b)) {
+            if (!compareHaveItem(have.b[key], maxedHave.b[key])){ return false; }
+        }    
+    } else {
+        for (const key of Object.keys(maxedHave)) {
+            if (!compareHaveItem(have[key], maxedHave[key])){ return false; }
+        }    
     }
     return true;
 }

@@ -759,7 +759,17 @@ const fullWeaponHave = (entry) => {
 
 export const doneWeaponHave = (entry, fullWeapon) => {
     const build = WeaponBuild[entry.Build];
-    if (build[5]) {
+    if (fullWeapon && entry.Series === 4) {
+        const have = {b: {}};
+        for (const k in build){
+            if (k === '6') {
+                have.b[k] = 1;
+            } else {
+                have.b[k] = build[k].length;
+            }
+        }
+        return have;
+    } else if (build[5]) {
         const unbindReq = Math.max(build[5].map((b) => b.UnbindReq));
         const have = {
             b: {
@@ -770,11 +780,6 @@ export const doneWeaponHave = (entry, fullWeapon) => {
         }
         if (build[2]) {
             have.b[2] = Math.floor(Math.max(0, unbindReq - 1) / 4);
-        }
-        if (fullWeapon) {
-            have.b[1] = build[1].length;
-            have.b[2] = build[2].length;
-            have.b[3] = build[3].length;
         }
         return have;
     } else if (!build[6]) {
@@ -827,7 +832,7 @@ export function WeaponListingItem(props) {
     }
     const lcHaving = (e) => {
         if (have) {
-            const doneHave = doneWeaponHave(entry, have.b[1] >= 5);
+            const doneHave = doneWeaponHave(entry, have.b[1] >= 4);
             for (let bi of Object.keys(have.b)) {
                 doneHave.b[bi] = Math.max(have.b[bi], doneHave.b[bi] || 0);
             }

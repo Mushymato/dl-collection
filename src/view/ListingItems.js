@@ -235,8 +235,19 @@ const useStyles = makeStyles({
         width: 'fit-content',
     },
     mcTabUb: {
+        position: 'relative',
         gridColumnStart: 1,
         gridColumnEnd: 6,
+    },
+    mcDeco: {
+        position: 'absolute',
+        zIndex: 0,
+        width: 60,
+        height: 60,
+    },
+    mcDecoUb5: {
+        width: 180,
+        left: 0,
     },
     Flame: { backgroundColor: ELEMENT_BG_COLORS.Flame },
     Water: { backgroundColor: ELEMENT_BG_COLORS.Water },
@@ -251,6 +262,18 @@ const useStyles = makeStyles({
     FgShadow: { color: ELEMENT_FG_COLORS.Shadow },
     FgNull: { color: ELEMENT_FG_COLORS.Null },
 });
+
+const MC_SVG_PATHS = {
+    d39: 'M0 25 60 25 60 35 0 35Z',
+    d36: 'M60 25 25 25 25 60 35 60 35 35 60 35Z',
+    d69: 'M0 25 35 25 35 60 25 60 25 35 0 35Z',
+    d03: 'M60 35 25 35 25 0 35 0 35 25 60 25Z',
+    d09: 'M0 35 35 35 35 0 25 0 25 25 0 25Z',
+    d039: 'M0 25 25 25 25 0 35 0 35 25 60 25 60 35 0 35Z',
+    d3: 'M25 35 60 35 60 25 25 25Z',
+    dUb0: 'M25 60 35 60 35 25 25 25Z',
+    dUb36: 'M35 60 25 60 25 37Q25 25 37 25L150 25 150 35 38 35Q35 35 35 38Z',
+}
 
 export const insertLinebreak = (name, locale) => {
     switch (locale) {
@@ -576,18 +599,22 @@ export function CharaListingItem(props) {
                             const mcItem = mcInfo[seq];
                             const mcIcon = MCPieceIcon(entry, mcItem);
                             let ubItem = null;
+                            const ubSeq = Math.floor(seq / 10);
                             if ([11, 21, 31, 41, 51].includes(seq)) {
-                                const ubSeq = Math.floor(seq / 10);
                                 const ubIcon = (ubSeq === 5) ? `Mc_Unbind_6M_0${entry.Element}` : 'Mc_Unbind_Mana';
+                                const ubChecked = getUbChecked(ubSeq);
                                 ubItem = (
                                     <Box className={clsx(classes.mcTabUb)} >
+                                        <svg className={clsx(classes.mcDeco, ubSeq === 5 && classes.mcDecoUb5)}>
+                                            <path d={(ubSeq < 5) ? MC_SVG_PATHS.dUb0 : MC_SVG_PATHS.dUb36} fill={ubChecked ? "#3f51b5" : ELEMENT_BG_COLORS.Null}></path>
+                                        </svg>
                                         <Tooltip title={`Unbind ${ubSeq}`} aria-label={`ub-${ubSeq}`} placement="top" classes={{ popper: clsx(classes.abilityCheckTooltip) }}>
                                             <Checkbox
                                                 name={`${id}-ub-${ubSeq}`}
                                                 onClick={handleUbCheck}
                                                 color="default"
                                                 classes={{ root: clsx(classes.abilityCheck) }}
-                                                checked={getUbChecked(ubSeq)}
+                                                checked={ubChecked}
                                                 icon={<img src={`${process.env.PUBLIC_URL}/manacircle/${ubIcon}.png`} alt={`ub-${seq}`} className={clsx(classes.abilityIcon, classes.grayscale)} />}
                                                 checkedIcon={<img src={`${process.env.PUBLIC_URL}/manacircle/${ubIcon}.png`} alt={`ub-${seq}`} className={clsx(classes.abilityIcon)} />}
                                             />
@@ -596,20 +623,49 @@ export function CharaListingItem(props) {
                                 );
                             }
                             const seqMcTxt = `${seq}: ${mcIcon.txt}`;
+                            const nodeChecked = getMCChecked(seq);
+                            let mcDecoPath = MC_SVG_PATHS.d39;
+                            const seqR = seq % 10;
+                            if (seqR === 0){
+                                if (ubSeq === 7){
+                                    mcDecoPath = MC_SVG_PATHS.d3;
+                                } else if (ubSeq > 5){
+                                    mcDecoPath = MC_SVG_PATHS.d36;
+                                } else {
+                                    mcDecoPath = MC_SVG_PATHS.d03;
+                                }
+                            } else if (seqR === 1){
+                                if (ubSeq > 4){
+                                    mcDecoPath = MC_SVG_PATHS.d03;
+                                } else {
+                                    mcDecoPath = MC_SVG_PATHS.d36;
+                                }
+                            } else if (seqR === 3 && ubSeq < 5 && ubSeq > 0){
+                                mcDecoPath = MC_SVG_PATHS.d039;
+                            } else if (seqR === 5) {
+                                mcDecoPath = MC_SVG_PATHS.d69;
+                            } else if (seqR === 6) {
+                                mcDecoPath = MC_SVG_PATHS.d09;
+                            }
                             return (
                                 <React.Fragment key={seq}>
                                     {ubItem}
-                                    <Tooltip title={seqMcTxt} aria-label={seqMcTxt} placement="top" classes={{ popper: clsx(classes.abilityCheckTooltip) }}>
-                                        <Checkbox
-                                            name={`${id}-mc-${seq}`}
-                                            onClick={handleMCCheck}
-                                            color="default"
-                                            classes={{ root: clsx(classes.abilityCheck) }}
-                                            checked={getMCChecked(seq)}
-                                            icon={<img src={mcIcon.img} alt={`mc-${seq}`} className={clsx(classes.abilityIcon, classes.grayscale)} />}
-                                            checkedIcon={<img src={mcIcon.img} alt={`mc-${seq}`} className={clsx(classes.abilityIcon)} />}
-                                        />
-                                    </Tooltip>
+                                    <Box>
+                                        <svg className={clsx(classes.mcDeco)}>
+                                            <path d={mcDecoPath} fill={nodeChecked ? "#3f51b5" : ELEMENT_BG_COLORS.Null}></path>
+                                        </svg>
+                                        <Tooltip title={seqMcTxt} aria-label={seqMcTxt} placement="top" classes={{ popper: clsx(classes.abilityCheckTooltip) }}>
+                                            <Checkbox
+                                                name={`${id}-mc-${seq}`}
+                                                onClick={handleMCCheck}
+                                                color="default"
+                                                classes={{ root: clsx(classes.abilityCheck) }}
+                                                checked={nodeChecked}
+                                                icon={<img src={mcIcon.img} alt={`mc-${seq}`} className={clsx(classes.abilityIcon, classes.grayscale)} />}
+                                                checkedIcon={<img src={mcIcon.img} alt={`mc-${seq}`} className={clsx(classes.abilityIcon)} />}
+                                            />
+                                        </Tooltip>
+                                    </Box>
                                 </React.Fragment>
                             )
                         })}
@@ -771,7 +827,7 @@ export function WeaponListingItem(props) {
     }
     const lcHaving = (e) => {
         if (have) {
-            const doneHave = doneWeaponHave(entry, have.b[1] === 5);
+            const doneHave = doneWeaponHave(entry, have.b[1] >= 5);
             for (let bi of Object.keys(have.b)) {
                 doneHave.b[bi] = Math.max(have.b[bi], doneHave.b[bi] || 0);
             }

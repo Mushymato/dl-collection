@@ -1100,7 +1100,7 @@ export function FortListingItem(props) {
                     className={clsx(classes.cardIcon)}
                     image={cardIconUrl}
                     title={cardName} alt={cardName} >
-                    {have && (Object.keys(have).map((key) => (<Box className={clsx(classes.circleIcon, classes[`circleIcon${key}`], (have[key] >= maxLv) && classes.circleIconMaxed)}>{have[key]}</Box>)))}
+                    {have && (Object.keys(have).map((key) => (<Box key={key} className={clsx(classes.circleIcon, classes[`circleIcon${key}`], (have[key] >= maxLv) && classes.circleIconMaxed)}>{have[key]}</Box>)))}
                 </CardMedia>
             </CardActionArea>
             <CardContent className={clsx(classes.cardName)}>
@@ -1113,7 +1113,7 @@ export function FortListingItem(props) {
                 </Button>
             </CardContent>
         </Card>
-        <Dialog onClose={handleClose} aria-labelledby={`${category}-${id}-dialog`} open={open} fullWidth={'md'}
+        <Dialog onClose={handleClose} aria-labelledby={`${category}-${id}-dialog`} open={open} fullWidth={true}
         >
             <DialogTitle id={`${category}-${id}-dialog`} onClose={handleClose}>
                 <FormControlLabel
@@ -1144,7 +1144,6 @@ export function FortListingItem(props) {
                                 marks
                                 min={0}
                                 max={maxLv}
-                                classes={classes.FgNull}
                             />
                         </Box>
                     )

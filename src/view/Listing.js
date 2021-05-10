@@ -29,15 +29,37 @@ const SortMethods = {
     byType: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b)),
     byForm: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Form - entries[b].Form || entries[a].Rarity - entries[b].Rarity || a - b)),
 }
-
+const ifMaxedEntry = (have, entry, storeKey) => {
+    if (!have){ return false; }
+    let maxedHave = null;
+    switch (storeKey) {
+        case 'fort':
+            return entry.Detail.length === Math.min(...Object.values(have));
+        case 'chara':
+            maxedHave = doneCharaHave(entry, 5);
+            break
+        case 'amulet':
+            maxedHave = doneAmuletHave(entry, true);
+            break;
+        case 'weapon':
+            maxedHave = doneWeaponHave(entry, true);
+            break;
+        case 'dragon':
+        default:
+            maxedHave = { c: 5 };
+            break;
+    }
+    for (const key of Object.keys(maxedHave)) {
+        if (have[key] !== maxedHave[key]){ return false; }
+    }
+    return true;
+}
 const CheckFilterMethods = {
-    ifHave: (entry, have) => (have),
-    ifNotHave: (entry, have) => (!have),
-    ifNotMaxLevel: (entry, have) => {
-        if (have) {
-            return entry.Detail.length > Math.min(...Object.values(have));
-        }
-        return true;
+    ifHave: (have, entry, storeKey) => (have),
+    ifNotHave: (have, entry, storeKey) => (!have),
+    ifMaxed: ifMaxedEntry,
+    ifNotMaxed: (have, entry, storeKey) => {
+        return !(ifMaxedEntry(have, entry, storeKey));
     }
 }
 
@@ -123,11 +145,15 @@ function Listing(props) {
         setFilters(newFilters);
         saveLocalObj(storeFilterKey, newFilters);
     }
+    const modifyFilter = (newFilters) => {
+        setFilters(newFilters);
+        saveLocalObj(storeFilterKey, newFilters);
+    }
     const checkFilter = (id) => {
         const entry = entries[id];
         const have = having[id];
         for (const f of Object.keys(filters)) {
-            if (CheckFilterMethods[f] && !CheckFilterMethods[f](entry, have)) {
+            if (CheckFilterMethods[f] && !CheckFilterMethods[f](have, entry, storeKey)) {
                 return false;
             } else if (radioFilters.includes(f) && entry[f] !== filters[f]) {
                 return false;
@@ -147,16 +173,23 @@ function Listing(props) {
         let newHaving = { ...having };
         if (!majorityHaving) {
             for (const id of visibleEntries) {
-                if (storeKey === 'weapon') {
-                    newHaving[id] = doneWeaponHave(entries[id]);
-                } else if (storeKey === 'amulet'){
-                    newHaving[id] = doneAmuletHave(entries[id]);
-                } else if (storeKey === 'fort') {
-                    newHaving[id] = (new Array(fortMaxNum(entries[id]))).fill(entries[id].Detail.length);
-                } else if (storeKey === 'chara') {
-                    newHaving[id] = doneCharaHave(entries[id])
-                } else {
-                    newHaving[id] = having[id] || DEFAULT_HAVE[storeKey][entries[id].Rarity];
+                switch (storeKey) {
+                    case 'chara':
+                        newHaving[id] = doneCharaHave(entries[id]);
+                        break
+                    case 'amulet':
+                        newHaving[id] = doneAmuletHave(entries[id]);
+                        break;
+                    case 'weapon':
+                        newHaving[id] = doneWeaponHave(entries[id]);
+                        break;
+                    case 'fort':
+                        newHaving[id] = (new Array(fortMaxNum(entries[id]))).fill(entries[id].Detail.length);
+                        break;
+                    case 'dragon':
+                    default:
+                        newHaving[id] = having[id] || DEFAULT_HAVE[storeKey][entries[id].Rarity];
+                        break;
                 }
             }
         } else {
@@ -175,9 +208,10 @@ function Listing(props) {
             count = visibleEntries.reduce((res, id) => (res + (having[id] ? (having[id].b[5] ? 1 : 0) : 0)), 0);
             total = visibleEntries.reduce((res, id) => (res + (WeaponBuild[entries[id].Build][5] ? 1 : 0)), 0);
         } else if (storeKey === 'fort') {
-            const halidom = having[100101] ? having[100101][0] : 0;
+            const halidomVisible = visibleEntries.includes("100101");
+            const halidom = (halidomVisible && having[100101]) ? having[100101][0] : 0;
             count = visibleEntries.reduce((res, id) => (res + (having[id] ? Object.values(having[id]).reduce((a, b) => a + b, 0) : 0)), 0) - halidom;
-            total = visibleEntries.reduce((res, id) => (res + (fortMaxNum(entries[id]) * entries[id].Detail.length)), 0) - 10;
+            total = visibleEntries.reduce((res, id) => (res + (fortMaxNum(entries[id]) * entries[id].Detail.length)), 0) - (halidomVisible ? 10 : 0);
         }
         const p = ((100 * count / total) >> 0)
         return `${title}: ${count} / ${total} (${p}%)`
@@ -198,6 +232,7 @@ function Listing(props) {
                 toggleAllHaving={toggleAllHaving}
                 addFilter={addFilter}
                 removeFilter={removeFilter}
+                modifyFilter={modifyFilter}
                 filters={filters}
                 radioFilters={radioFilters}
                 availabilities={availabilities}

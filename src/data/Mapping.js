@@ -46,11 +46,6 @@ export const ELEMENT_FG_COLORS = {
 }
 
 export const DEFAULT_HAVE = {
-    chara: {
-        3: { lv: 60, mc: 30 },
-        4: { lv: 70, mc: 40 },
-        5: { lv: 80, mc: 40 }
-    },
     dragon: {
         3: { c: 5 },
         4: { c: 5 },

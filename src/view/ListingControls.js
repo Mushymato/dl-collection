@@ -58,7 +58,7 @@ const useStyles = makeStyles({
         display: 'block',
         marginLeft: 5
     },
-    radioTitle: {
+    fieldsetTitle: {
         fontSize: '0.7em',
         textTransform: 'uppercase',
         marginBottom: 5
@@ -94,6 +94,13 @@ const useStyles = makeStyles({
         float: "right",
         position: "relative",
         top: -4
+    },
+    tristateCheck: {
+        width: 90,
+        height: 30,
+    },
+    tristateCheckLabel: {
+        lineHeight: 1,
     }
 });
 
@@ -506,15 +513,56 @@ function ListingControls(props) {
         sort, handleSort, sortOptions,
         order, toggleOrder,
         majorityHaving, toggleAllHaving,
-        addFilter, removeFilter, filters, radioFilters,
+        addFilter, removeFilter, modifyFilter,
+        filters, radioFilters,
         availabilities, series,
         storeKey, having, visible
     } = props;
     const classes = useStyles();
 
-    const handleBoolCheckFilters = (e) => {
-        if (e.target.checked) { addFilter(e.target.name); }
-        else { removeFilter(e.target.name); }
+    const [haveState, setHaveState] = React.useState(filters.ifHave ? 'HAVE' : (filters.ifNotHave ? 'NOT_HAVE' : 'ALL'));
+    const nextHaveState = (e) => {
+        const newFilters = { ...filters };
+        delete newFilters['ifHave'];
+        delete newFilters['ifNotHave'];
+        switch (haveState) {
+            case 'ALL':
+                setHaveState('HAVE');
+                newFilters['ifHave'] = true;
+                break;
+            case 'HAVE':
+                setHaveState('NOT_HAVE');
+                newFilters['ifNotHave'] = true;
+                break;
+            case 'NOT_HAVE':
+            default:
+                setHaveState('ALL');
+                break;
+        }
+        modifyFilter(newFilters);
+    }
+
+    // const [maxState, setMaxState] = React.useState(filters.ifMax ? 'MAX' : (filters.ifNotMax ? 'NOT_MAX' : 'ALL'));
+    const [maxedState, setMaxedState] = React.useState('ALL');
+    const nextMaxedState = (e) => {
+        const newFilters = { ...filters };
+        delete newFilters['ifMaxed'];
+        delete newFilters['ifNotMaxed'];
+        switch (maxedState) {
+            case 'ALL':
+                setMaxedState('MAXED');
+                newFilters['ifMaxed'] = true;
+                break;
+            case 'MAXED':
+                setMaxedState('NOT_MAXED');
+                newFilters['ifNotMaxed'] = true;
+                break;
+            case 'NOT_MAXED':
+            default:
+                setMaxedState('ALL');
+                break;
+        }
+        modifyFilter(newFilters);
     }
 
     const radioFilterValues = {
@@ -588,17 +636,21 @@ function ListingControls(props) {
                     </FormControl>
                     <IconButton onClick={toggleOrder} size="small">{order === 'ASC' ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}</IconButton>
                 </Grid>
-                {(storeKey === 'chara' || storeKey === 'dragon') && <Grid item>
-                    <FormControlLabel control={<Checkbox checked={filters.ifHave} name="ifHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].HAVE} />
-                    <FormControlLabel control={<Checkbox checked={filters.ifNotHave} name="ifNotHave" onChange={handleBoolCheckFilters.bind(this)} color="primary" />} label={TextLabel[locale].NOT_HAVE} />
-                </Grid>}
-                {(storeKey === 'fort') && <Grid item>
-                    <FormControlLabel control={<Checkbox checked={filters.ifNotMaxLevel} name="ifNotMaxLevel" onChange={handleBoolCheckFilters.bind(this)} />} label={TextLabel[locale].NOT_MAXED} />
-                </Grid>}
+                <Grid item>
+                    <FormControl component="fieldset">
+                        <FormLabel disabled component="legend" className={classes.fieldsetTitle}>{TextLabel[locale].HAVE + '/' + (locale === 'EN' ? 'NOT' : TextLabel[locale].NOT_HAVE)}</FormLabel>
+                        <FormControlLabel control={<Checkbox checked={!!(filters.ifHave)} indeterminate={!(filters.ifHave || filters.ifNotHave)} onChange={nextHaveState} color="primary" />} label={TextLabel[locale][haveState]} className={clsx(classes.tristateCheck)} classes={{label: clsx(classes.tristateCheckLabel)}} />
+                    </FormControl>
+                    {!(filters.ifNotHave) && 
+                    <FormControl component="fieldset">
+                        <FormLabel disabled component="legend" className={classes.fieldsetTitle}>{TextLabel[locale].MAXED + '/' + (locale === 'EN' ? 'NOT' : TextLabel[locale].NOT_MAXED)}</FormLabel>
+                        <FormControlLabel control={<Checkbox checked={!!(filters.ifMaxed)} indeterminate={!(filters.ifMaxed || filters.ifNotMaxed)} onChange={nextMaxedState} color="primary" />} label={TextLabel[locale][maxedState]} className={clsx(classes.tristateCheck)} classes={{label: clsx(classes.tristateCheckLabel)}} />
+                    </FormControl>}
+                </Grid>
                 {radioFilters.map((rf) => (
                     <Grid item key={rf}>
                         <FormControl component="fieldset" className={classes.radioGroup}>
-                            <FormLabel disabled component="legend" className={classes.radioTitle}>{TextLabel[locale][rf.toUpperCase()]}</FormLabel>
+                            <FormLabel disabled component="legend" className={classes.fieldsetTitle}>{TextLabel[locale][rf.toUpperCase()]}</FormLabel>
                             <RadioGroup aria-label={rf} name={rf} value={filters[rf] ? filters[rf].toString() : "0"} row onChange={handleRadioFilter.bind(this)}>
                                 {Object.keys(radioFilterValues[rf]).map((v) => (
                                     <Radio

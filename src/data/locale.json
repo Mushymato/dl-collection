@@ -28,7 +28,8 @@
         "BUILDUP_6": "Copies",
         "MATS": "Materials",
         "TYPE": "Type",
-        "UNION": "Affinity"
+        "UNION": "Affinity",
+        "MEDAL": "Medals"
     },
     "JP": {
         "ADVENTURERS": "キャラ",
@@ -75,7 +76,8 @@
         "TYPE": "類別",
         "UNION": "ユニオン",
         "Treasure Trade": "トレジャー交換",
-        "Dominion": "ディアボロス"
+        "Dominion": "ディアボロス",
+        "MEDAL": "勲章"
     },
     "CN": {
         "ADVENTURERS": "角色",
@@ -122,6 +124,7 @@
         "TYPE": "类别",
         "UNION": "联阵",
         "Treasure Trade": "宝物交换",
-        "Dominion": "天魔"
+        "Dominion": "天魔",
+        "MEDAL": "勋章"
     }
 }

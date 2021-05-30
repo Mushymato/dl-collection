@@ -54,3 +54,49 @@ export const DEFAULT_HAVE = {
 }
 
 export const unionIcon = (union) => (`Icon_Union_${union.toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })}`);
+
+
+export const MEDALS = [
+    'Icon_Medal_100101',
+    'Icon_Medal_100201',
+    'Icon_Medal_100301',
+    'Icon_Medal_100302',
+    'Icon_Medal_100401',
+    'Icon_Medal_100402',
+    'Icon_Medal_100501',
+    'Icon_Medal_100502',
+    'Icon_Medal_100503',
+    'Icon_Medal_100601',
+    'Icon_Medal_100602',
+    'Icon_Medal_100603',
+    'Icon_Medal_100701',
+    'Icon_Medal_100801',
+    'Icon_Medal_100802',
+    'Icon_Medal_100803',
+    'Icon_Medal_100901',
+    'Icon_Medal_101001',
+    'Icon_Medal_101002',
+    'Icon_Medal_101003'
+]
+// export const MEDALS = [
+//     'Icon_Medal_100301',
+//     'Icon_Medal_100302',
+//     'Icon_Medal_100401',
+//     'Icon_Medal_100402',
+//     'Icon_Medal_100101',
+//     'Icon_Medal_100501',
+//     'Icon_Medal_100502',
+//     'Icon_Medal_100503',
+//     'Icon_Medal_100601',
+//     'Icon_Medal_100602',
+//     'Icon_Medal_100603',
+//     'Icon_Medal_100701',
+//     'Icon_Medal_100901',
+//     'Icon_Medal_100801',
+//     'Icon_Medal_100802',
+//     'Icon_Medal_100803',
+//     'Icon_Medal_100201',
+//     'Icon_Medal_101001',
+//     'Icon_Medal_101002',
+//     'Icon_Medal_101003'
+// ]

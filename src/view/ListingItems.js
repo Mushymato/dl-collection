@@ -38,7 +38,7 @@ import WeaponLevel from '../data/weaponlevel.json'
 import AmuletBuild from '../data/amuletbuild.json';
 import AmuletLevel from '../data/amuletlevel.json';
 
-import { ELEMENTS, ELEMENT_BG_COLORS, ELEMENT_FG_COLORS, DEFAULT_HAVE, unionIcon } from '../data/Mapping';
+import { ELEMENTS, ELEMENT_BG_COLORS, ELEMENT_FG_COLORS, DEFAULT_HAVE, unionIcon, MEDALS } from '../data/Mapping';
 
 const useStyles = makeStyles({
     root: {
@@ -142,8 +142,11 @@ const useStyles = makeStyles({
         left: 3,
         zIndex: 2
     },
+    mcIconDone: {
+        color: '#ffcc26'
+    },
     mcIconMaxed: {
-        color: '#ffcc00'
+        color: '#41eded'
     },
     mcIconAmulet: {
         top: 25,
@@ -234,6 +237,27 @@ const useStyles = makeStyles({
         textAlign: 'center',
         width: 'fit-content',
     },
+    medalTabpanel: {
+        display: 'grid',
+        margin: '0 auto',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        textAlign: 'center',
+        width: 'fit-content',
+    },
+    medalIcon: {
+        width: 60,
+        height: 60
+    },
+    medalButton: {
+        float: "right",
+        position: "relative",
+        top: 21,
+    },
+    medalDeco: {
+        width: 25,
+        height: 25,
+        verticalAlign: 'middle'
+    },
     mcTabUb: {
         position: 'relative',
         gridColumnStart: 1,
@@ -322,24 +346,28 @@ export const doneCharaHave = (entry, unbind) => {
     if (unbind === undefined) {
         return {
             ub: 0,
-            no: []
+            no: [],
+            md: {},
         }
     }
     if (unbind < 2) {
         return {
             ub: (entry.Rarity === 3) ? 2 : 3,
-            no: Array.from({ length: 10 }, (_, i) => i + 1)
+            no: Array.from({ length: 10 }, (_, i) => i + 1),
+            md: {},
         }
     }
     if (unbind < 4) {
         return {
             ub: 4,
-            no: Array.from({ length: 10 }, (_, i) => i + 1)
+            no: Array.from({ length: 10 }, (_, i) => i + 1),
+            md: {},
         }
     }
     return {
         ub: entry.MaxLimitBreak,
-        no: (entry.MaxLimitBreak === 5) ? Array.from({ length: 20 }, (_, i) => i + 1) : Array.from({ length: 10 }, (_, i) => i + 1)
+        no: (entry.MaxLimitBreak === 5) ? Array.from({ length: 20 }, (_, i) => i + 1) : Array.from({ length: 10 }, (_, i) => i + 1),
+        md: {},
     }
 }
 
@@ -430,9 +458,14 @@ export function CharaListingItem(props) {
 
     const mcInfo = ManaCircle[entry.MCName];
 
-    if (have && (have.no === undefined || have.ub === undefined)) {
-        have.ub = 0;
-        have.no = [];
+    if (have) {
+        if (have.no === undefined || have.ub === undefined){
+            have.ub = 0;
+            have.no = [];
+        }
+        if (have.md === undefined) {
+            have.md = {};
+        }
     }
 
     const createThisHaving = () => {
@@ -446,6 +479,7 @@ export function CharaListingItem(props) {
         }
     }
     const deleteThisHaving = () => {
+        setMcIdx(0);
         if (have) {
             deleteHaving(id);
         }
@@ -476,41 +510,40 @@ export function CharaListingItem(props) {
     const handleMCCheck = (e) => {
         const seq = parseInt(e.target.name.split('-').slice(-1));
         const mcItem = mcInfo[seq];
+        const newHave = have ? {...have} : {ub: 0, no: [], md: {}};
         if (have) {
-            let newUb = mcItem.Hierarchy - 1;
-            let newNo = null;
-            if (have.ub < newUb) {
-                if (newUb === 5) {
-                    newNo = Array.from({ length: mcItem.No }, (_, i) => i + 1);
+            newHave.ub = mcItem.Hierarchy - 1;
+            newHave.no = [];
+            if (have.ub < newHave.ub) {
+                if (newHave.ub === 5) {
+                    newHave.no = Array.from({ length: mcItem.No }, (_, i) => i + 1);
                 } else {
-                    newNo = [mcItem.No];
+                    newHave.no = [mcItem.No];
                 }
-            } else if (have.ub === newUb) {
-                if (newUb === 5) {
-                    newNo = Array.from({ length: mcItem.No }, (_, i) => i + 1);
+            } else if (have.ub === newHave.ub) {
+                if (newHave.ub === 5) {
+                    newHave.no = Array.from({ length: mcItem.No }, (_, i) => i + 1);
                 } else {
-                    newNo = [...have.no];
-                    const index = newNo.indexOf(mcItem.No);
+                    newHave.no = [...have.no];
+                    const index = newHave.no.indexOf(mcItem.No);
                     if (index > -1) {
-                        newNo.splice(index, 1);
+                        newHave.no.splice(index, 1);
                     } else {
-                        newNo.push(mcItem.No);
+                        newHave.no.push(mcItem.No);
                     }
                 }
-            } else if (have.ub > newUb) {
-                if (newUb === 5) {
-                    newNo = Array.from({ length: (mcItem.No - 1) }, (_, i) => i + 1);
+            } else if (have.ub > newHave.ub) {
+                if (newHave.ub === 5) {
+                    newHave.no = Array.from({ length: (mcItem.No - 1) }, (_, i) => i + 1);
                 } else {
-                    newNo = Array.from({ length: 9 }, (_, i) => (i + 1 >= mcItem.No) ? i + 2 : i + 1);
+                    newHave.no = Array.from({ length: 9 }, (_, i) => (i + 1 >= mcItem.No) ? i + 2 : i + 1);
                 }
             }
-            updateHaving(id, { ub: newUb, no: newNo });
         } else {
-            updateHaving(id, {
-                ub: mcItem.Hierarchy - 1,
-                no: mcItem.Hierarchy < 6 ? [mcItem.No] : Array.from({ length: mcItem.No }, (_, i) => i + 1)
-            });
+            newHave.ub = mcItem.Hierarchy - 1;
+            newHave.no = mcItem.Hierarchy < 6 ? [mcItem.No] : Array.from({ length: mcItem.No }, (_, i) => i + 1);
         }
+        updateHaving(id, newHave);
     };
     const getMCChecked = (seq) => {
         if (!have) { return false; }
@@ -520,17 +553,49 @@ export function CharaListingItem(props) {
 
     const handleUbCheck = (e) => {
         const ubSeq = parseInt(e.target.name.split('-').slice(-1));
+        const newHave = have ? {...have} : {ub: 0, no: [], md: {}};
         if (have && have.ub === ubSeq) {
-            updateHaving(id, { ub: ubSeq - 1, no: Array.from({ length: 10 }, (_, i) => i + 1) });
+            newHave.ub = ubSeq - 1;
+            newHave.no = Array.from({ length: 10 }, (_, i) => i + 1);
         } else {
-            updateHaving(id, { ub: ubSeq, no: [] });
+            newHave.ub = ubSeq;
+            newHave.no = [];
         }
+        updateHaving(id, newHave);
     }
     const getUbChecked = (ubSeq) => {
         if (!have) { return false; }
         return have.ub >= ubSeq;
     }
 
+    const handleMedalCheck = (e) => {
+        const mdSeq = parseInt(e.target.name.split('-').slice(-1));
+        const newHave = have ? {...have} : {ub: 0, no: [], md: {}};
+        if (have && have.md[mdSeq]){
+            delete newHave.md[mdSeq];
+        } else {
+            newHave.md[mdSeq] = 1;
+        }
+        updateHaving(id, newHave);
+    }
+    const getMedalChecked = (mdSeq) => {
+        if (!have) { return false; }
+        return !!(have.md[mdSeq]);
+    }
+    const handleMedalCount = (e) => {
+        const newHave =  {...have};
+        if (Object.keys(have.md).length === MEDALS.length){
+            for (let seq = 0; seq < MEDALS.length; seq += 1) {
+                delete newHave.md[seq];
+            }
+        } else {
+            for (let seq = 0; seq < MEDALS.length; seq += 1) {
+                newHave.md[seq] = 1;
+            }
+        }
+        updateHaving(id, newHave);
+    }
+    // const MedalDeco = <React.Fragment><img className={clsx(classes.medalDeco)} src={`${process.env.PUBLIC_URL}/medal_on/Icon_Medal_100101.png`} alt={TextLabel[locale].MEDAL}/>{Object.keys(have.md).length}</React.Fragment>;
     return (<Grid item>
         <Card className={clsx(classes.root, have && (classes[ELEMENTS[entry.Element]] || classes.Null))}>
             <CardActionArea onClick={lcHaving} onContextMenu={rcHaving}>
@@ -539,7 +604,7 @@ export function CharaListingItem(props) {
                     image={cardIconUrl}
                     title={cardName} alt={cardName} >
                     {(mcNum > 0) && (
-                        <Box className={clsx(classes.mcIcon, mcNum === maxManaCircle && classes.mcIconMaxed)}>{mcNum}</Box>
+                        <Box className={clsx(classes.mcIcon, mcNum >= maxManaCircle ? classes.mcIconMaxed : (mcNum >= 50 && classes.mcIconDone))}>{mcNum}</Box>
                     )}
                 </CardMedia>
             </CardActionArea>
@@ -564,6 +629,11 @@ export function CharaListingItem(props) {
                         checkedIcon={<img src={cardIconUrl} alt={cardName} className={clsx(classes.dialogIcon)} />} />}
                     label={<Box><Typography>{cardName}</Typography></Box>}
                 />
+                {have && (
+                    <Button className={clsx(classes.medalButton)} name={`${id}-medal-count`} onClick={handleMedalCount} variant="outlined">
+                        <img className={clsx(classes.medalDeco)} src={`${process.env.PUBLIC_URL}/medal_on/Icon_Medal_100101.png`} alt={TextLabel[locale].MEDAL}/>{Object.keys(have.md).length}
+                    </Button>
+                )}
             </DialogTitle>
             <DialogContent dividers>
                 <Tabs
@@ -571,7 +641,6 @@ export function CharaListingItem(props) {
                     onChange={handleTabs}
                     indicatorColor="primary"
                     textColor="primary"
-                    variant="scrollable"
                     scrollButtons="auto"
                 >
                     {mcRanges.map((mcRange, floor) => (
@@ -583,11 +652,12 @@ export function CharaListingItem(props) {
                             aria-controls={`mc-tabpanel-${floor}`}
                         />
                     ))}
+                    {have && <Tab key={mcRanges.length} classes={{ root: classes.mcTab }} label={TextLabel[locale].MEDAL} id={`mc-tab-${mcRanges.length}`} aria-controls={`mc-tabpanel-${mcRanges.length}`}/>}
                 </Tabs>
                 {mcRanges.map((mcRange, floor) => (
                     <Box component="div"
                         role="tabpanel"
-                        hidden={mcIdx !== floor}
+                        style={{ display: mcIdx !== floor ? 'none' : undefined }}
                         id={`mc-tabpanel-${floor}`}
                         aria-labelledby={`mc-tab-${floor}`}
                         value={mcIdx}
@@ -671,6 +741,29 @@ export function CharaListingItem(props) {
                         })}
                     </Box>
                 ))}
+                {have && <Box component="div"
+                    role="tabpanel"
+                    style={{ display: mcIdx !== mcRanges.length ? 'none' : undefined }}
+                    id={`mc-tabpanel-${mcRanges.length}`}
+                    aria-labelledby={`mc-tab-${mcRanges.length}`}
+                    value={mcIdx}
+                    index={mcRanges.length}
+                    key={mcRanges.length}
+                    dir="ltr"
+                    className={clsx(classes.medalTabpanel)}>
+                    {MEDALS.map((medal, seq) => (
+                        <Checkbox
+                            key={medal}
+                            onClick={handleMedalCheck}
+                            checked={getMedalChecked(seq)}
+                            name={`medal-${seq}`}
+                            color="default"
+                            classes={{ root: clsx(classes.abilityCheck) }}
+                            icon={<img src={`${process.env.PUBLIC_URL}/medal_off/${medal}.png`} alt={`medal-${seq}`} className={clsx(classes.medalIcon)} />}
+                            checkedIcon={<img src={`${process.env.PUBLIC_URL}/medal_on/${medal}.png`} alt={`medal-${seq}`} className={clsx(classes.medalIcon)}/>}
+                        />
+                    ))}
+                </Box>}
             </DialogContent>
         </Dialog>
     </Grid >)
@@ -937,7 +1030,7 @@ export function WeaponListingItem(props) {
                     className={clsx(classes.cardIcon)}
                     image={cardIconUrl}
                     title={cardName} alt={cardName} >
-                    {have && (<Box className={clsx(classes.mcIcon, have.b[5] && classes.mcIconMaxed)}>
+                    {have && (<Box className={clsx(classes.mcIcon, have.b[1] === build[1].length ? classes.mcIconMaxed : (have.b[5] && classes.mcIconDone))}>
                         {levelData.Level}
                     </Box>)}
                 </CardMedia>
@@ -1260,7 +1353,7 @@ export function AmuletListingItem(props) {
                     image={cardIconUrl}
                     title={cardName} alt={cardName} >
                     {have && (
-                        <Box className={clsx(classes.mcIconAmulet, classes.mcIcon, have.b[1] === 4 && have.b[6] === 4 && classes.mcIconMaxed)}>
+                        <Box className={clsx(classes.mcIconAmulet, classes.mcIcon, have.b[1] === 4 && (have.b[6] === 4 ? classes.mcIconMaxed : classes.mcIconDone))}>
                             {levelData.Level}</Box>
                     )}
                     <Box className={clsx(classes.amuletAbIcon)}><img alt={entry.AbIcon} src={`${process.env.PUBLIC_URL}/ability/${entry.AbIcon}.png`} /></Box>

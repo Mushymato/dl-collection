@@ -242,7 +242,7 @@ function Listing(props) {
             const halidomVisible = visibleEntries.includes("100101");
             const halidom = (halidomVisible && having[100101]) ? having[100101][0] : 0;
             count = visibleEntries.reduce((res, id) => (res + (having[id] ? Object.values(having[id]).reduce((a, b) => a + b, 0) : 0)), 0) - halidom;
-            total = visibleEntries.reduce((res, id) => (res + (fortMaxNum(entries[id]) * entries[id].Detail.length)), 0) - (halidomVisible ? 10 : 0);
+            total = visibleEntries.reduce((res, id) => (res + (fortMaxNum(entries[id]) * entries[id].Detail.length)), 0) - (halidomVisible ? 11 : 0);
         }
         const p = ((100 * count / total) >> 0)
         return `${title}: ${count} / ${total} (${p}%)`

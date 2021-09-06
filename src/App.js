@@ -111,7 +111,7 @@ function App() {
           storeKey={'chara'}
           minRarity={3}
           maxRarity={5}
-          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity']}
+          sortOptions={['byID', 'byName', 'byElement', 'byWeapon', 'byRarity', 'byMC']}
           radioFilters={['Element', 'Weapon', 'Rarity']}
           ItemComponent={CharaListingItem}
         />

@@ -18,16 +18,32 @@ const weaponSeriesSortOrder = {
 }
 
 const SortMethods = {
-    byID: (entries) => (Object.keys(entries)),
-    byNameEN: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameEN.localeCompare(entries[b].NameEN))),
-    byNameJP: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameJP.localeCompare(entries[b].NameJP))),
-    byNameCN: (entries) => Object.keys(entries).sort((a, b) => (entries[a].NameCN.localeCompare(entries[b].NameCN))),
-    byElement: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon || entries[b].Rarity - entries[a].Rarity || b.localeCompare(a))),
-    byWeapon: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity || b.localeCompare(a))),
-    byRarity: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
-    bySeries: (entries) => Object.keys(entries).sort((a, b) => (weaponSeriesSortOrder[entries[a].Series] - weaponSeriesSortOrder[entries[b].Series] || entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
-    byType: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b)),
-    byForm: (entries) => Object.keys(entries).sort((a, b) => (entries[a].Form - entries[b].Form || entries[a].Rarity - entries[b].Rarity || a - b)),
+    byID: (entries, having) => (Object.keys(entries)),
+    byNameEN: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].NameEN.localeCompare(entries[b].NameEN))),
+    byNameJP: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].NameJP.localeCompare(entries[b].NameJP))),
+    byNameCN: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].NameCN.localeCompare(entries[b].NameCN))),
+    byElement: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon || entries[b].Rarity - entries[a].Rarity || b.localeCompare(a))),
+    byWeapon: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].Weapon - entries[b].Weapon || entries[a].Element - entries[b].Element || entries[b].Rarity - entries[a].Rarity || b.localeCompare(a))),
+    byRarity: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
+    bySeries: (entries, having) => Object.keys(entries).sort((a, b) => (weaponSeriesSortOrder[entries[a].Series] - weaponSeriesSortOrder[entries[b].Series] || entries[a].Rarity - entries[b].Rarity || entries[a].Element - entries[b].Element || entries[a].Weapon - entries[b].Weapon)),
+    byType: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].Type - entries[b].Type || a - b)),
+    byForm: (entries, having) => Object.keys(entries).sort((a, b) => (entries[a].Form - entries[b].Form || entries[a].Rarity - entries[b].Rarity || a - b)),
+    byMC: (entries, having) => Object.keys(entries).sort((a, b) => {
+        const haveA = having[a];
+        const haveB = having[b];
+        if (!haveA && !haveB){ return 0; }
+        if (!haveA){ return 0; }
+        if (!haveB){ return -100; }
+        return haveA.ub - haveB.ub || haveA.no.length - haveB.no.length;
+    }),
+    byMC_DSC: (entries, having) => Object.keys(entries).sort((a, b) => {
+        const haveA = having[a];
+        const haveB = having[b];
+        if (!haveA && !haveB){ return 0; }
+        if (!haveA){ return 0; }
+        if (!haveB){ return -100; }
+        return haveB.ub - haveA.ub || haveB.no.length - haveA.no.length;
+    }),
 }
 const compareHaveItem = (valueA, valueB) => {
     if (Array.isArray(valueA)){
@@ -94,32 +110,6 @@ function Listing(props) {
 
     const fullStoreKey = `dl-collection-${storeKey}`;
 
-    const storeSortKey = `${fullStoreKey}-sorting`;
-    const [sort, setSort] = useState(localStorage.getItem(storeSortKey) || sortDefault || 'byElement');
-    const handleSort = (e) => {
-        setSort(e.target.value);
-        localStorage.setItem(storeSortKey, e.target.value);
-    }
-    const storeSortOrderKey = `${fullStoreKey}-sorting-order`;
-    const [order, setOrder] = useState(localStorage.getItem(storeSortOrderKey) || 'ASC');
-    const toggleOrder = (e) => {
-        const nextOrder = (order === 'ASC' ? 'DSC' : 'ASC');
-        setOrder(nextOrder);
-        localStorage.setItem(storeSortOrderKey, nextOrder);
-    }
-    const sorted = (entries) => {
-        let sortedId = null;
-        if (sort === 'byName') {
-            sortedId = SortMethods[`byName${locale}`](entries);
-        } else {
-            sortedId = SortMethods[sort](entries);
-        }
-        if (order === 'DSC') {
-            sortedId = sortedId.reverse();
-        }
-        return sortedId;
-    }
-
     const [having, setHaving] = useState(loadLocalObj(fullStoreKey));
     const updateHaving = (id, changes, tempHaving) => {
         const newHaving = {
@@ -136,6 +126,34 @@ function Listing(props) {
         setHaving(newHaving);
         saveLocalObj(fullStoreKey, newHaving);
         return newHaving;
+    }
+
+    const storeSortKey = `${fullStoreKey}-sorting`;
+    const [sort, setSort] = useState(localStorage.getItem(storeSortKey) || sortDefault || 'byElement');
+    const handleSort = (e) => {
+        setSort(e.target.value);
+        localStorage.setItem(storeSortKey, e.target.value);
+    }
+    const storeSortOrderKey = `${fullStoreKey}-sorting-order`;
+    const [order, setOrder] = useState(localStorage.getItem(storeSortOrderKey) || 'ASC');
+    const toggleOrder = (e) => {
+        const nextOrder = (order === 'ASC' ? 'DSC' : 'ASC');
+        setOrder(nextOrder);
+        localStorage.setItem(storeSortOrderKey, nextOrder);
+    }
+    const sorted = (entries, having) => {
+        let sortedId = null;
+        if (sort === 'byName') {
+            sortedId = SortMethods[`byName${locale}`](entries, having);
+        } else if (sort === 'byMC' && order === 'DSC') {
+            return SortMethods['byMC_DSC'](entries, having);
+        } else {
+            sortedId = SortMethods[sort](entries, having);
+        }
+        if (order === 'DSC') {
+            sortedId = sortedId.reverse();
+        }
+        return sortedId;
     }
 
     const storeFilterKey = `${fullStoreKey}-filters`;
@@ -179,7 +197,7 @@ function Listing(props) {
         return true;
     }
 
-    const visibleEntries = sorted(entries).filter(checkFilter);
+    const visibleEntries = sorted(entries, having).filter(checkFilter);
     const visibleHave = visibleEntries.reduce((res, id) => (res + (having[id] ? 1 : 0)), 0);
     const majorityHaving = having && Object.keys(having).length > 0 && visibleHave > (visibleEntries.length / 2 >> 0);
     const toggleAllHaving = () => {

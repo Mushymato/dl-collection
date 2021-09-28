@@ -208,6 +208,12 @@ const useStyles = makeStyles({
     ubM: {
         backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ubm.png")`,
     },
+    ub02: {
+        backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ub02.png")`,
+    },
+    ubM2: {
+        backgroundImage: `url("${process.env.PUBLIC_URL}/ui/ubm2.png")`,
+    },
     dialogIcon: {
         width: 60,
         height: 60
@@ -806,13 +812,15 @@ export function DragonListingItem(props) {
 
     const CardIconDeco = () => {
         if (editing || !have) { return <React.Fragment></React.Fragment>; }
-        const mub = (count / 5 >> 0);
-        const r = Math.max((count - 1) % 5, 0);
+        const mlb = entry.MaxLimitBreak;
+        const mub = (count / (mlb + 1) >> 0);
+        const r = Math.max(count % (mlb + 1), 0);
         return (
             <Grid container className={classes.unbindIcons} justify="center">
                 {[0, 1, 2, 3].map((i) =>
                     (<Grid key={i} item className={clsx(classes.ubIcon, (r >= 4 ? classes.ubM : (r > i ? classes.ubN : classes.ub0)))} />))}
-                {count > 5 && <Grid item className={clsx(classes.ubIcon, classes.mubCount)}>{mub}</Grid>}
+                {mlb === 5 && <Grid key={4} item className={clsx(classes.ubIcon, (r >= 5 ? classes.ubM2 : classes.ub02))} />}
+                {count > (mlb + 1) && <Grid item className={clsx(classes.ubIcon, classes.mubCount)}>{mub}</Grid>}
             </Grid>
         );
     };

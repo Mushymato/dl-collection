@@ -50,7 +50,7 @@ const compareHaveItem = (valueA, valueB) => {
         // heurstic for maxed manacircles
         return valueA.length === valueB.length;
     }
-    return valueA === valueB;
+    return valueA >= valueB;
 }
 const ifMaxedEntry = (have, entry, storeKey) => {
     if (!have){ return false; }
@@ -69,7 +69,7 @@ const ifMaxedEntry = (have, entry, storeKey) => {
             break;
         case 'dragon':
         default:
-            maxedHave = { c: 5 };
+            maxedHave = { c: entry.MaxLimitBreak + 1 };
             break;
     }
     if (maxedHave.b){

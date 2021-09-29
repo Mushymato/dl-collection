@@ -813,8 +813,9 @@ export function DragonListingItem(props) {
     const CardIconDeco = () => {
         if (editing || !have) { return <React.Fragment></React.Fragment>; }
         const mlb = entry.MaxLimitBreak;
-        const mub = (count / (mlb + 1) >> 0);
-        const r = Math.max(count % (mlb + 1), 0);
+        const mub = ((count - 1) / (mlb + 1)) >> 0;
+        const r = Math.max((count - 1) % (mlb + 1), 0);
+        console.log(count, mlb, r);
         return (
             <Grid container className={classes.unbindIcons} justify="center">
                 {[0, 1, 2, 3].map((i) =>

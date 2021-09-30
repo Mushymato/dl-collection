@@ -137,7 +137,7 @@ function WeaponMaterialSummation(props) {
         const build = WeaponBuild[entry.Build];
         if (currHave) {
             for (let bi of Object.keys(doneHave.b)) {
-                if (doneHave.b[bi] <= currHave.b[bi]) { continue; }
+                if (!build[bi] || doneHave.b[bi] <= currHave.b[bi]) { continue; }
                 for (const bs of build[bi].slice(currHave.b[bi] ? ((bi === '6') ? currHave.b[bi] - 1 : currHave.b[bi]) : 0, doneHave.b[bi])) {
                     totalCost += bs.Cost;
                     for (let m of Object.keys(bs.Mats)) {
@@ -165,7 +165,7 @@ function WeaponMaterialSummation(props) {
                 totalMats[m] += entry.Mats[m];
             }
             for (let bi of Object.keys(doneHave.b)) {
-                if (bi === '6') { continue; }
+                if (!build[bi] || bi === '6') { continue; }
                 for (const bs of build[bi].slice(0, doneHave.b[bi])) {
                     totalCost += bs.Cost;
                     for (let m of Object.keys(bs.Mats)) {

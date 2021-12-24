@@ -90,7 +90,7 @@ const useStyles = makeStyles({
             verticalAlign: 'middle'
         }
     },
-    fullToggle: {
+    maxToggle: {
         float: "right",
         position: "relative",
         top: -4
@@ -110,8 +110,8 @@ function WeaponMaterialSummation(props) {
     const classes = useStyles();
 
     const [open, setOpen] = React.useState(false);
-    const [fullAgito, setFullAgito] = React.useState("Agito Weapons Maxed");
-    const isFullAgito = fullAgito === "Agito Weapons Maxed";
+    const [maxWeapon, setMaxWeapon] = React.useState("Weapons Maxed");
+    const isMaxWeapon = maxWeapon === "Weapons Maxed";
 
     const toggleOpen = (open) => (event) => {
         if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -120,11 +120,11 @@ function WeaponMaterialSummation(props) {
         setOpen(open);
     };
 
-    const toggleFullAgito = (event) => {
-        if (isFullAgito) {
-            setFullAgito("Agito Weapon Bonus Only");
+    const toggleMaxWeapon = (event) => {
+        if (isMaxWeapon) {
+            setMaxWeapon("Weapon Bonus Only");
         } else {
-            setFullAgito("Agito Weapons Maxed");
+            setMaxWeapon("Weapons Maxed");
         }
     }
 
@@ -133,7 +133,7 @@ function WeaponMaterialSummation(props) {
     for (let id of visible) {
         const entry = Weapon[id];
         const currHave = having[id];
-        const doneHave = doneWeaponHave(entry, entry.Series === 4 && isFullAgito);
+        const doneHave = doneWeaponHave(entry, entry.Rarity === 6 && isMaxWeapon);
         const build = WeaponBuild[entry.Build];
         if (currHave) {
             for (let bi of Object.keys(doneHave.b)) {
@@ -191,11 +191,11 @@ function WeaponMaterialSummation(props) {
                     <img src={`${process.env.PUBLIC_URL}/ui/rupee.png`} alt="cost" />
                     <Typography display="inline" gutterBottom>   {totalCost.toLocaleString()}</Typography>
                     <Button
-                        onClick={toggleFullAgito}
-                        name="fullAgito"
+                        onClick={toggleMaxWeapon}
+                        name="maxWeapon"
                         variant="outlined"
-                        className={clsx(classes.fullToggle)}
-                    >{fullAgito}</Button>
+                        className={clsx(classes.maxToggle)}
+                    >{maxWeapon}</Button>
                 </DialogContent>
                 <DialogContent dividers>
                     <Grid container spacing={1} alignItems="flex-start" justify="flex-start" wrap="wrap">
@@ -371,7 +371,7 @@ function AmuletMaterialSummation(props) {
                         onClick={toggleFullCopies}
                         name="fullCopies"
                         variant="outlined"
-                        className={clsx(classes.fullToggle)}
+                        className={clsx(classes.maxToggle)}
                     >{fullCopies}</Button>
                 </DialogContent>
                 <DialogContent dividers>

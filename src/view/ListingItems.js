@@ -861,7 +861,7 @@ const fullWeaponHave = (entry) => {
 
 export const doneWeaponHave = (entry, fullWeapon) => {
     const build = WeaponBuild[entry.Build];
-    if (fullWeapon && entry.Series === 4) {
+    if (fullWeapon && entry.Rarity === 6) {
         const have = {b: {}};
         for (const k in build){
             if (k === '6') {
@@ -885,7 +885,6 @@ export const doneWeaponHave = (entry, fullWeapon) => {
         }
         return have;
     } else if (!build[6]) {
-        // special case for agito
         return fullWeaponHave(entry);
     } else {
         return { b: { 6: 1 } };

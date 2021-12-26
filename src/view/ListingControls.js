@@ -152,9 +152,11 @@ function WeaponMaterialSummation(props) {
                 if (currLevelMats[m]) {
                     const diff = doneLevelMats[m] - currLevelMats[m];
                     if (diff > 0) {
-                        totalMats[m] = diff;
+                        if (!totalMats[m]) { totalMats[m] = 0; }
+                        totalMats[m] += diff;
                     }
                 } else {
+                    if (!totalMats[m]) { totalMats[m] = 0; }
                     totalMats[m] = doneLevelMats[m];
                 }
             }
@@ -177,7 +179,7 @@ function WeaponMaterialSummation(props) {
             const doneLevelMats = WeaponLevel[entry.Rarity][doneHave.b[1] || 0].Mats;
             for (let m of Object.keys(doneLevelMats)) {
                 if (!totalMats[m]) { totalMats[m] = 0; }
-                totalMats[m] = doneLevelMats[m];
+                totalMats[m] += doneLevelMats[m];
             }
         }
     }

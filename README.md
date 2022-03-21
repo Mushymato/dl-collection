@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 https://mushymato.github.io/dl-collection/
 
 # Installation
-`npm run install`
+`npm install`
 
 # Run Locally
 `npm run start`
